@@ -23,7 +23,9 @@ namespace SpriteEditor
     [System.Serializable]
     public class RowPair
     {
-        public string name;
+        [SerializeField]
+        public string name = "";
+        [SerializeField]
         public int column;
     }
 
@@ -31,6 +33,7 @@ namespace SpriteEditor
     public class SpriteAnimatorStruct
     {
         public Texture2D sprites;
-        public RowPair[] settings = new RowPair[0];
+        [SerializeField]
+        public List<RowPair> settings = new List<RowPair>();
     }
 }
