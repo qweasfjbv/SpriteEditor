@@ -30,7 +30,7 @@ namespace SpriteEditor
     [System.Serializable]
     public class SpriteAnimatorStruct
     {
-        public Texture2D sprites;
+        public Texture2D sprite;
         public RowPair[] settings = new RowPair[0];
     }
 }

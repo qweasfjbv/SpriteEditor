@@ -13,7 +13,7 @@ namespace SpriteEditor
         private int selectedTab = 0;
         private string[] tabs = new string[]
         {
-        "Sprite Cutter", "Animation Maker", "Override Controller Setter"
+            "Animation Maker", "Override Controller Setter"
         };
 
 
@@ -68,12 +68,9 @@ namespace SpriteEditor
             switch (selectedTab)
             {
                 case 0:
-                    DrawSpriteCutterTab();
-                    break;
-                case 1:
                     DrawAnimationMakerTab();
                     break;
-                case 2:
+                case 1:
                     DrawOverrideControllerSetterTab();
                     break;
             }
@@ -111,17 +108,10 @@ namespace SpriteEditor
             EditorGUILayout.PropertyField(property, true);
             so.ApplyModifiedProperties();
 
-            /*
-            spriteSheets[0] = (Texture2D)EditorGUILayout.ObjectField("Attack Sprite", spriteSheets[0], typeof(Texture2D), false);
-            spriteSheets[1] = (Texture2D)EditorGUILayout.ObjectField("Die Sprite", spriteSheets[1], typeof(Texture2D), false);
-            spriteSheets[2] = (Texture2D)EditorGUILayout.ObjectField("Dmg Sprite", spriteSheets[2], typeof(Texture2D), false);
-            spriteSheets[3] = (Texture2D)EditorGUILayout.ObjectField("Idle Sprite", spriteSheets[3], typeof(Texture2D), false);
-            spriteSheets[4] = (Texture2D)EditorGUILayout.ObjectField("Walk Sprite", spriteSheets[4], typeof(Texture2D), false);
-            */
-
+            
             if (GUILayout.Button("Create Animator"))
             {
-                CreateAnimator();
+                CheckColumnCounts(6, 7, 48, 48, animatorStructs[0].sprite);
             }
 
         }
@@ -177,10 +167,6 @@ namespace SpriteEditor
 
 
             Debug.Log("Animator and Override Controller created successfully.");
-        }
-        public void DrawSpriteCutterTab()
-        {
-
         }
         public void DrawAnimationMakerTab()
         {
@@ -366,6 +352,59 @@ namespace SpriteEditor
             return labelStyle;
         }
 
+        private void MakeTextureReadable(Texture2D texture)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+
+            TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(assetPath);
+            textureImporter.isReadable = true;
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate); 
+        }
+
+        private void CheckColumnCounts(int rows, int columns, int cellWidth, int cellHeight, Texture2D texture)
+        {
+
+            if (!texture.isReadable)
+            {
+                MakeTextureReadable(texture);
+            }
+
+            for (int row = 0; row < rows; row++)
+            {
+                int validColumns = 0;
+
+                for (int col = 0; col < columns; col++)
+                {
+                    int x = col * (int)cellWidth;
+                    int y = row * (int)cellHeight;
+
+                    if (!IsCellEmpty(texture, x, y, (int)cellWidth, (int)cellHeight))
+                    {
+                        validColumns++;
+                    }
+
+                }
+
+                // TODO : sprite (has diff col count) Test needed
+                Debug.Log($"ROW : {row} , VALID : {validColumns}");
+            }
+        }
+
+        private bool IsCellEmpty(Texture2D texture, int x, int y, int width, int height)
+        {
+            for (int i = x; i < x + width; i++)
+            {
+                for (int j = y; j < y + height; j++)
+                {
+                    if (i < texture.width && j < texture.height)
+                    {
+                        Color pixelColor = texture.GetPixel(i, j);
+                        if (pixelColor.a > 0) return false;
+                    }
+                }
+            }
+            return true;
+        }
 
     }
 }
