@@ -34,6 +34,6 @@ namespace SpriteEditor
     {
         public Texture2D sprites;
         [SerializeField]
-        public List<RowPair> settings = new List<RowPair>();
+        public List<string> animationNames = new List<string>();
     }
 }

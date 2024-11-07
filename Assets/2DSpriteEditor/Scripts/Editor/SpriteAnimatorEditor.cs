@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEngine.UIElements;
-using System.Collections.Generic;
 
 namespace SpriteEditor
 {
@@ -9,22 +7,29 @@ namespace SpriteEditor
     {
 
 
-        private int selectedTab = 0;
+        private int selectedTabIndex = 0;
         private string[] tabs = new string[]
         {
             "Animation Maker", "Override Controller Setter"
         };
 
+        private GridByEnum gridByEnum = 0;
+        private string[] gridByOptions = new string[]
+        {
+            "Grid by Cell Size", "Grid by Cell Count"
+        };
 
-        private string characterName = "Name";
-        private string storePath = "Assets/";
 
-        private AnimationClip[,] animationClips = new AnimationClip[5, 4];
+        private string spriteName;
+        private string storePath;
 
-        private int widthPx = 16;
-        private int heightPx = 16;
-        private float pivotX = 0.5f;
-        private float pivotY = 0.5f;
+        private int widthPx;
+        private int heightPx;
+        private int rowCount;
+        private int columnCount;
+        private float pivotX;
+        private float pivotY;
+
         private AnimatorOverrideController overrideController;
         private UnityEditor.Animations.AnimatorController baseController;
 
@@ -32,17 +37,37 @@ namespace SpriteEditor
 
         public SpriteAnimatorStruct[] animatorStructs = new SpriteAnimatorStruct[0];
 
+        private void InitOrLoad()
+        {
+
+            // TODO : Save Needed
+            spriteName = "sprite_name";
+            storePath = Constants.PATH_BASIC;
+
+            selectedTabIndex = 0;
+            gridByEnum = 0;
+
+            widthPx = 8; heightPx = 8;
+            rowCount = 1; columnCount = 1;
+            pivotX = 0.5f; pivotY = 0.5f;
+
+        }
 
         [MenuItem("Window/Sprite Editor/Helper Window")]
         public static void ShowWindow()
         {
             var window = GetWindow<SpriteAnimatorEditor>("Sprite Editor");
+            window.InitOrLoad();
             window.minSize = new Vector2(600, 600);
+            Rect tmpRect = window.position;
+            window.position = tmpRect;
+            Debug.Log(window.position.size);
         }
-        Vector2 scrollPosition = Vector2.zero;
+
+        private Vector2 scrollPosition = Vector2.zero;
         private void OnGUI()
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.Height(700));
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.Height(600));
 
             GUIStyle style = new GUIStyle();
             style.alignment = TextAnchor.MiddleCenter;
@@ -57,16 +82,16 @@ namespace SpriteEditor
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            selectedTab = GUILayout.Toolbar(selectedTab, tabs, GUILayout.Width(Screen.width / 1.5f), GUILayout.Height(25));
+            selectedTabIndex = GUILayout.Toolbar(selectedTabIndex, tabs, GUILayout.Width(Screen.width / 1.5f), GUILayout.Height(25));
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
 
-            GuiLine(1);
+            EditorUtil.GuiLine(1);
             GUILayout.Space(10);
 
-            switch (selectedTab)
+            switch (selectedTabIndex)
             {
                 case 0:
                     DrawAnimationMakerTab();
@@ -78,7 +103,7 @@ namespace SpriteEditor
 
 
 
-            characterName = EditorGUILayout.TextField("Sprite Name", characterName);
+            spriteName = EditorGUILayout.TextField("Sprite Name", spriteName);
             baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
 
 
@@ -86,39 +111,80 @@ namespace SpriteEditor
 
 
             GUILayout.Space(20);
-            GUILayout.Label("Sprite Setting", GetH3LabelStyle());
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Width px ");
-            widthPx = EditorGUILayout.IntSlider(widthPx, 16, 1024);
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("Pivot X ");
-            pivotX = EditorGUILayout.Slider(pivotX, 0f, 1f);
+            GUILayout.Label("Sprite Setting", EditorUtil.GetH3LabelStyle());
+
+            // Layout Value
+            float halfRatio = 0.45f;
+            float halfLabelRatio = halfRatio * 0.33f;
+            float halfContentRatio = halfRatio * 0.66f;
+
+
+            GUILayout.BeginHorizontal(GUILayout.Width(position.width * halfRatio));
+            GUILayout.Label("Grid By : ");
+            gridByEnum = (GridByEnum)EditorGUILayout.EnumPopup(gridByEnum);
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+            switch (gridByEnum)
+            {
+                case GridByEnum.CellCount:
+                    GUILayout.Label("Col Count ", GUILayout.Width(position.width * halfLabelRatio));
+                    columnCount = EditorGUILayout.IntSlider(columnCount, 1, 48, GUILayout.Width(position.width * halfContentRatio));
+                    break;
+                case GridByEnum.CellSize:
+                    GUILayout.Label("Width px ", GUILayout.Width(position.width * halfLabelRatio));
+                    widthPx = EditorGUILayout.IntSlider(widthPx, 8, 256, GUILayout.Width(position.width * halfContentRatio));
+                    break;
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("Pivot X ", GUILayout.Width(position.width * halfLabelRatio));
+            pivotX = EditorGUILayout.Slider(pivotX, 0f, 1f, GUILayout.Width(position.width * halfContentRatio));
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Height px ");
-            heightPx = EditorGUILayout.IntSlider(heightPx, 16, 1024);
+            switch (gridByEnum)
+            {
+                case GridByEnum.CellCount:
+                    GUILayout.Label("Row Count ", GUILayout.Width(position.width * halfLabelRatio));
+                    rowCount = EditorGUILayout.IntSlider(rowCount, 1, 48, GUILayout.Width(position.width * halfContentRatio));
+                    break;
+                case GridByEnum.CellSize:
+                    GUILayout.Label("Height px ", GUILayout.Width(position.width * halfLabelRatio));
+                    heightPx = EditorGUILayout.IntSlider(heightPx, 8, 256, GUILayout.Width(position.width * halfContentRatio));
+                    break;
+            }
             GUILayout.FlexibleSpace();
-            GUILayout.Label("Pivot Y ");
-            pivotY = EditorGUILayout.Slider(pivotY, 0f, 1f);
+            GUILayout.Label("Pivot Y ", GUILayout.Width(position.width * halfLabelRatio));
+            pivotY = EditorGUILayout.Slider(pivotY, 0f, 1f, GUILayout.Width(position.width * halfContentRatio));
+            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
             // TODO : Offset, Padding needed
+
+
             GUILayout.Space(10);
-            GuiLine();
+            EditorUtil.GuiLine();
             GUILayout.Space(10);
-            GUILayout.Label("Animation Setting", GetH3LabelStyle());
+            GUILayout.Label("Animation Setting", EditorUtil.GetH3LabelStyle());
 
             if (animatorStructs.Length > 0)
             {
                 foreach(var value in animatorStructs)
                 {
                     if (value.sprites == null) continue;
-                    int cnt = value.sprites.height / heightPx;
-                    for(int i=value.settings.Count; i<cnt; i++)
+                    UpdateRowColumn(gridByEnum, new Vector2Int(value.sprites.width, value.sprites.height),
+                        ref widthPx, ref heightPx, ref columnCount, ref rowCount);
+
+
+                    for(int i=value.animationNames.Count; i<rowCount; i++)
                     {
-                        value.settings.Add(new RowPair());
+                        value.animationNames.Add($"sample_name_{i}");
+                    }
+
+                    for (int i = value.animationNames.Count; i > rowCount; i--)
+                    {
+                        value.animationNames.RemoveAt(value.animationNames.Count - 1);
                     }
                 }
             }
@@ -130,13 +196,16 @@ namespace SpriteEditor
             EditorGUILayout.PropertyField(property, true);
             so.ApplyModifiedProperties();
 
+            
+
             GUILayout.Space(20);
-            GUILayout.Label("Store Path : " + storePath);
+            GUILayout.Label("Store Path : " + storePath, EditorUtil.GetTruncateLabelStyle());
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Set Store path"))
             {
                 storePath = EditorUtility.OpenFolderPanel("Store path", "", "");
+                if (storePath == "") storePath = Constants.PATH_BASIC;
                 string[] paths = System.IO.Directory.GetFiles(storePath);
             }
 
@@ -146,6 +215,8 @@ namespace SpriteEditor
             }
 
             GUILayout.EndHorizontal();
+
+            GUILayout.Space(20);
 
             GUILayout.EndScrollView();
         }
@@ -160,104 +231,21 @@ namespace SpriteEditor
         }
 
 
-        private void GuiLine(int height = 1)
+        private void UpdateRowColumn(GridByEnum gridByEnum, Vector2Int textureSize, ref int widthPx, ref int heightPx, ref int colCount, ref int rowCount)
         {
-            Rect rect = EditorGUILayout.GetControlRect(false, height);
-            rect.height = height;
-            EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 1));
-        }
-
-        private GUIStyle GetH1LabelStyle()
-        {
-            GUIStyle labelStyle = new GUIStyle();
-            labelStyle.fontStyle = FontStyle.Bold;
-            labelStyle.alignment = TextAnchor.MiddleCenter;
-            labelStyle.fontSize = 25;
-            labelStyle.normal.textColor = Color.white;
-            return labelStyle;
-        }
-        private GUIStyle GetH2LabelStyle()
-        {
-            GUIStyle labelStyle = new GUIStyle();
-            labelStyle.fontStyle = FontStyle.Bold;
-            labelStyle.alignment = TextAnchor.MiddleLeft;
-            labelStyle.padding = new RectOffset
+            switch (gridByEnum)
             {
-                left = 10,
-                bottom = 10,
-            };
-            labelStyle.fontSize = 20;
-            labelStyle.normal.textColor = Color.white;
-            return labelStyle;
-        }
-
-        private GUIStyle GetH3LabelStyle()
-        {
-            GUIStyle labelStyle = new GUIStyle();
-            labelStyle.fontStyle = FontStyle.Bold;
-            labelStyle.alignment = TextAnchor.MiddleLeft;
-            labelStyle.padding = new RectOffset
-            {
-                left = 10,
-                bottom = 10,
-            };
-            labelStyle.fontSize = 15;
-            labelStyle.normal.textColor = Color.white;
-            return labelStyle;
-        }
-
-        private void MakeTextureReadable(Texture2D texture)
-        {
-            string assetPath = AssetDatabase.GetAssetPath(texture);
-
-            TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(assetPath);
-            textureImporter.isReadable = true;
-            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate); 
-        }
-
-        private void CheckColumnCounts(int rows, int columns, int cellWidth, int cellHeight, Texture2D texture)
-        {
-
-            if (!texture.isReadable)
-            {
-                MakeTextureReadable(texture);
+                case GridByEnum.CellCount:
+                    widthPx = textureSize.x / colCount;
+                    heightPx = textureSize.y / rowCount;
+                    break;
+                case GridByEnum.CellSize:
+                    colCount = textureSize.x / widthPx;
+                    rowCount = textureSize.y / heightPx;
+                    break;
             }
 
-            for (int row = 0; row < rows; row++)
-            {
-                int validColumns = 0;
-
-                for (int col = 0; col < columns; col++)
-                {
-                    int x = col * (int)cellWidth;
-                    int y = row * (int)cellHeight;
-
-                    if (!IsCellEmpty(texture, x, y, (int)cellWidth, (int)cellHeight))
-                    {
-                        validColumns++;
-                    }
-
-                }
-
-                // TODO : sprite (has diff col count) Test needed
-                Debug.Log($"ROW : {row} , VALID : {validColumns}");
-            }
-        }
-
-        private bool IsCellEmpty(Texture2D texture, int x, int y, int width, int height)
-        {
-            for (int i = x; i < x + width; i++)
-            {
-                for (int j = y; j < y + height; j++)
-                {
-                    if (i < texture.width && j < texture.height)
-                    {
-                        Color pixelColor = texture.GetPixel(i, j);
-                        if (pixelColor.a > 0) return false;
-                    }
-                }
-            }
-            return true;
+            return;
         }
 
     }

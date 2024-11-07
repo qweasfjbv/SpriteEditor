@@ -10,9 +10,10 @@ namespace SpriteEditor
     public static class SpriteEditFuncs
     {
 
-
-        // 각 애니메이션 스프라이트 당 한 번 호출됩니다.
-        // 각 row를 애니메이션 클립으로 만듭니다.
+        /// <summary>
+        /// Be called for each sprite.
+        /// create animation clip of each row
+        /// </summary>
         private static void SliceSpriteSheet(Texture2D texture, int sheetIdx, int widthPx, int heightPx)
         {
 
@@ -27,8 +28,7 @@ namespace SpriteEditor
             ti.isReadable = true;
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Multiple;
-            ti.spritePixelsPerUnit = 8;
-            ti.filterMode = FilterMode.Point;
+            ti.filterMode = FilterMode.Point;       
             ti.textureCompression = TextureImporterCompression.Uncompressed;
 
 
@@ -193,6 +193,60 @@ namespace SpriteEditor
             Debug.Log("Animator and Override Controller created successfully.");
         }
 
+
+
+        private static void MakeTextureReadable(Texture2D texture)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+
+            TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(assetPath);
+            textureImporter.isReadable = true;
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+        }
+
+        private static void CheckColumnCounts(int rows, int columns, int cellWidth, int cellHeight, Texture2D texture)
+        {
+
+            if (!texture.isReadable)
+            {
+                MakeTextureReadable(texture);
+            }
+
+            for (int row = 0; row < rows; row++)
+            {
+                int validColumns = 0;
+
+                for (int col = 0; col < columns; col++)
+                {
+                    int x = col * (int)cellWidth;
+                    int y = row * (int)cellHeight;
+
+                    if (!IsCellEmpty(texture, x, y, (int)cellWidth, (int)cellHeight))
+                    {
+                        validColumns++;
+                    }
+
+                }
+
+                // TODO : sprite (has diff col count) Test needed
+            }
+        }
+
+        private static bool IsCellEmpty(Texture2D texture, int x, int y, int width, int height)
+        {
+            for (int i = x; i < x + width; i++)
+            {
+                for (int j = y; j < y + height; j++)
+                {
+                    if (i < texture.width && j < texture.height)
+                    {
+                        Color pixelColor = texture.GetPixel(i, j);
+                        if (pixelColor.a > 0) return false;
+                    }
+                }
+            }
+            return true;
+        }
 
     }
 

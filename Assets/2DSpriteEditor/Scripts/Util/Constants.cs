@@ -1,4 +1,6 @@
 
+using UnityEngine;
+
 namespace SpriteEditor
 {
     public static class Constants
@@ -9,6 +11,10 @@ namespace SpriteEditor
         public static readonly string ANIM_PARAM_FALL = "isFall";
         public static readonly string ANIM_PARAM_ATK = "isAttack";
         public static readonly string ANIM_PARAM_DEAD = "isDead";
+
+
+        /** Basic Settings (could be changed) **/
+        public static readonly string PATH_BASIC = Application.dataPath;
 
     }
 }
