@@ -32,7 +32,7 @@ namespace SpriteEditor
     [System.Serializable]
     public class SpriteAnimatorStruct
     {
-        public Texture2D sprites;
+        public Texture2D sprite;
         [SerializeField]
         public List<string> animationNames = new List<string>();
     }
