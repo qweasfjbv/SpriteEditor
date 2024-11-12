@@ -5,7 +5,7 @@ namespace SpriteEditor
 {
     public class SpritePreviewPopup : EditorWindow
     {
-        public Sprite sprite;
+        private Sprite sprite;
 
         private float windowWidth = 600;
         private float windowHeight = 600;
@@ -16,9 +16,10 @@ namespace SpriteEditor
         private int rowCount;
         private int columnCount;
 
+        /** Properties **/
+        public Sprite PreviewSprite { get => sprite; set => sprite = value; }
         public int RowCount { get => rowCount; set => rowCount = value; }
         public int ColumnCount { get => columnCount; set => columnCount = value; }
-
 
         void OnGUI()
         {
@@ -29,20 +30,18 @@ namespace SpriteEditor
                 EditorGUI.DrawTextureTransparent(previewRect, sprite.texture, ScaleMode.ScaleToFit);
 
                 maxLength = Mathf.Max(sprite.texture.width, sprite.texture.height);
-                spriteWidth = 600 * sprite.texture.width/maxLength;
-                spriteHeight = 600 * sprite.texture.height/maxLength;
-                
-
+                spriteWidth = windowWidth * sprite.texture.width / maxLength;
+                spriteHeight = windowHeight * sprite.texture.height / maxLength;
 
                 for (int i = 1; i < rowCount; i++)
                 {
-                    Handles.DrawLine(new Vector2((windowWidth - spriteWidth)/2, (windowWidth - spriteHeight) / 2 + spriteHeight / rowCount * i), 
+                    Handles.DrawLine(new Vector2((windowWidth - spriteWidth) / 2, (windowWidth - spriteHeight) / 2 + spriteHeight / rowCount * i),
                         new Vector2((windowWidth + spriteWidth) / 2, (windowWidth - spriteHeight) / 2 + spriteHeight / rowCount * i));
                 }
                 for (int i = 1; i < columnCount; i++)
                 {
-                    Handles.DrawLine(new Vector2((windowWidth - spriteWidth) / 2 + spriteWidth / columnCount* i, (windowHeight- spriteHeight) / 2 ),
-                        new Vector2((windowWidth - spriteWidth) / 2 + spriteWidth / columnCount* i, (windowHeight + spriteHeight) / 2));
+                    Handles.DrawLine(new Vector2((windowWidth - spriteWidth) / 2 + spriteWidth / columnCount * i, (windowHeight - spriteHeight) / 2),
+                        new Vector2((windowWidth - spriteWidth) / 2 + spriteWidth / columnCount * i, (windowHeight + spriteHeight) / 2));
                 }
             }
             else

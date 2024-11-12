@@ -36,4 +36,40 @@ namespace SpriteEditor
         [SerializeField]
         public List<string> animationNames = new List<string>();
     }
+    
+    [System.Serializable]
+    public struct SpriteSliceOptions
+    {
+        public int widthPx, heightPx;
+        public float pivotX, pivotY;
+        
+        // TODO: Optional (not implemented yet) **/
+        public int paddingX, paddingY;
+        public int offsetX, offsetY;
+    }
+
+    [System.Serializable]
+    public struct AnimClipOptions {
+        public float frameGap;
+        public bool isLoop;
+    }
+
+    [System.Serializable]
+    public struct AnimatorOverrideOptions
+    {
+        public AnimationOptions animOptions;
+
+    }
+
+    [System.Serializable]
+    public struct AnimationOptions
+    {
+        public Sprite sprite;
+        public string spriteName;
+        public List<string> animNames;
+        public SpriteSliceOptions sliceOptions;
+        public AnimClipOptions clipOptions;
+    }
+
+
 }

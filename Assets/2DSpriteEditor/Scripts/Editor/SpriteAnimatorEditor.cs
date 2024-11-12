@@ -1,8 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using Unity.VisualScripting;
-using NUnit.Framework.Internal;
-using Codice.Client.BaseCommands;
 
 namespace SpriteEditor
 {
@@ -44,18 +41,16 @@ namespace SpriteEditor
 
 
         private SpritePreviewPopup previewPopup;
-        float halfRatio;
-        float halfLabelRatio;
-        float halfContentRatio;
+        private float halfRatio;
+        private float halfLabelRatio;
+        private float halfContentRatio;
 
         private void InitOrLoad()
         {
-
             // Layout Value
             halfRatio = 0.45f;
             halfLabelRatio = halfRatio * 0.33f;
             halfContentRatio = halfRatio * 0.66f;
-
 
             // TODO : Save Needed
             spriteName = "sprite_name";
@@ -87,43 +82,17 @@ namespace SpriteEditor
 
             DrawHeader();
             GUILayout.Space(20);
-            DrawSpriteSetting();
 
+            DrawSpriteSetting();
             GUILayout.Space(10);
             EditorUtil.GuiLine();
             GUILayout.Space(10);
 
+            DrawAnimationSetting();
+
             DrawPreviewButtons();
-
-            if (GUILayout.Button("Show Sprite Preview"))
-            {
-                
-                if (animatorStructs[0].sprite != null)
-                {
-                    if (!isShowPreview && previewPopup == null)
-                    {
-                        isShowPreview = true;
-                        previewPopup = CreateInstance<SpritePreviewPopup>();
-                        Rect rect = new Rect(0, 0, animatorStructs[0].sprite.width, animatorStructs[0].sprite.height);
-                        previewPopup.sprite = Sprite.Create(animatorStructs[0].sprite, rect, new Vector2(0.5f, 0.5f));
-                        previewPopup.RowCount = rowCount;
-                        previewPopup.ColumnCount = columnCount;
-                        previewPopup.ShowAsDropDown(new Rect(position.x, position.y, position.width, position.height), new Vector2(600, 600));
-                    }
-                }
-                else
-                {
-                    // ÇÁ¸®ºä ´Ý±â
-                    ClosePreviewPopup();
-                }
-            }
-            else
-            {
-                isShowPreview = false;
-            }
-
-
             GUILayout.Space(20);
+
             DrawFooter();
             GUILayout.Space(20);
             GUILayout.EndScrollView();
@@ -223,7 +192,7 @@ namespace SpriteEditor
             // TODO : Offset, Padding needed
 
         }
-        private void DrawPreviewButtons()
+        private void DrawAnimationSetting()
         {
 
             GUILayout.Label("Animation Setting", EditorUtil.GetH3LabelStyle());
@@ -257,6 +226,36 @@ namespace SpriteEditor
             EditorGUILayout.PropertyField(property, true);
             so.ApplyModifiedProperties();
 
+        }
+        private void DrawPreviewButtons()
+        {
+
+            if (GUILayout.Button("Show Sprite Preview"))
+            {
+
+                if (animatorStructs[0].sprite != null)
+                {
+                    if (!isShowPreview && previewPopup == null)
+                    {
+                        isShowPreview = true;
+                        previewPopup = CreateInstance<SpritePreviewPopup>();
+                        Rect rect = new Rect(0, 0, animatorStructs[0].sprite.width, animatorStructs[0].sprite.height);
+                        previewPopup.PreviewSprite = Sprite.Create(animatorStructs[0].sprite, rect, new Vector2(0.5f, 0.5f));
+                        previewPopup.RowCount = rowCount;
+                        previewPopup.ColumnCount = columnCount;
+                        previewPopup.ShowAsDropDown(new Rect(position.x, position.y, position.width, position.height), new Vector2(600, 600));
+                    }
+                }
+                else
+                {
+                    // ÇÁ¸®ºä ´Ý±â
+                    ClosePreviewPopup();
+                }
+            }
+            else
+            {
+                isShowPreview = false;
+            }
         }
         private void DrawFooter()
         {
