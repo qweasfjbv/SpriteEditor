@@ -50,7 +50,7 @@ namespace SpriteEditor
 
             // TODO : Save Needed
             spriteName = "sprite_name";
-            storePath = Constants.PATH_BASIC;
+            storePath = SpriteEditFuncs.PreprocessPath(Constants.PATH_BASIC);
 
             selectedTabIndex = 0;
             gridByEnum = 0;

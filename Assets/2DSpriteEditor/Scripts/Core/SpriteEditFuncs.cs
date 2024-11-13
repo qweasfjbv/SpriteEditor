@@ -1,10 +1,8 @@
-using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace SpriteEditor
 {
@@ -19,16 +17,16 @@ namespace SpriteEditor
             UnityEngine.Object[] objects = SliceSprite(texture, animOpt.sliceOptions);
             List<Sprite> sprites = new List<Sprite>();
 
+            int spritePointer = 0;
             int rowCount = texture.height / animOpt.sliceOptions.heightPx;
             for (int i = 0; i < rowCount; i++)
             {
                 int columnCount = GetColumnCounts(texture, i, animOpt.sliceOptions);
+
                 for (int j = 0; j < columnCount; j++)
                 {
-                    sprites.Add(objects[i] as Sprite);
+                    sprites.Add(objects[spritePointer++] as Sprite);
                 }
-
-                Debug.Log($"{animOpt.savePath}/anim_clip_{i}");
 
                 AssetDatabase.CreateAsset(CreateAnimationClip(sprites, animOpt.clipOptions), $"{animOpt.savePath}/anim_clip_{i}.anim");
                 AssetDatabase.SaveAssets();
@@ -95,6 +93,7 @@ namespace SpriteEditor
 
         private static AnimationClip CreateAnimationClip(List<Sprite> sprites, AnimClipOptions clipOpt)
         {
+            Debug.Log("SPRITE ANIM CLIP COUTN " + sprites.Count);
             AnimationClip clip = new AnimationClip();
 
             EditorCurveBinding curveBinding = new EditorCurveBinding();
@@ -107,11 +106,11 @@ namespace SpriteEditor
             for (int i = 0; i < sprites.Count; i++)
             {
                 keyFrames[i] = new ObjectReferenceKeyframe();
-                keyFrames[i].time = clipOpt.frameGap * i;
+                keyFrames[i].time = clipOpt.frameGap * i/1000;
                 keyFrames[i].value = sprites[i];
             }
             keyFrames[keyFrames.Length - 1] = new ObjectReferenceKeyframe();
-            keyFrames[keyFrames.Length - 1].time = clipOpt.frameGap * sprites.Count;
+            keyFrames[keyFrames.Length - 1].time = clipOpt.frameGap * sprites.Count/1000;
             keyFrames[keyFrames.Length - 1].value = sprites[0];
 
             AnimationUtility.SetObjectReferenceCurve(clip, curveBinding, keyFrames);
@@ -226,8 +225,9 @@ namespace SpriteEditor
         {
             // start with "Assets/"
             string relativePath = "";
-            string[] folders = System.IO.Directory.GetFiles(absolutePath);
+            string[] folders = absolutePath.Split('/');
             bool isInAssets = false;
+
             foreach(var folder in folders)
             {
                 if (folder == "Assets" || folder == "assets")
