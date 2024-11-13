@@ -64,8 +64,8 @@ namespace SpriteEditor
     [System.Serializable]
     public struct AnimationOptions
     {
-        public Sprite sprite;
         public string spriteName;
+        public string savePath;
         public List<string> animNames;
         public SpriteSliceOptions sliceOptions;
         public AnimClipOptions clipOptions;

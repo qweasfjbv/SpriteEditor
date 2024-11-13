@@ -14,10 +14,6 @@ namespace SpriteEditor
         };
 
         private GridByEnum gridByEnum = 0;
-        private string[] gridByOptions = new string[]
-        {
-            "Grid by Cell Size", "Grid by Cell Count"
-        };
 
 
         private string spriteName;
@@ -267,12 +263,29 @@ namespace SpriteEditor
             {
                 storePath = EditorUtility.OpenFolderPanel("Store path", "", "");
                 if (storePath == "") storePath = Constants.PATH_BASIC;
-                string[] paths = System.IO.Directory.GetFiles(storePath);
+                storePath = SpriteEditFuncs.PreprocessPath(storePath);
             }
 
             if (GUILayout.Button("Create Animation"))
             {
-                //SpriteEditFuncs.CreateAnimationClip;
+                SpriteSliceOptions sliceOpt = new SpriteSliceOptions();
+                sliceOpt.widthPx = widthPx;
+                sliceOpt.heightPx = heightPx;
+                sliceOpt.pivotX = pivotX;
+                sliceOpt.pivotY = pivotY;
+
+                AnimClipOptions clipOpt = new AnimClipOptions();
+                clipOpt.frameGap = 15;
+                clipOpt.isLoop = false;
+
+                AnimationOptions animOpt = new AnimationOptions();
+                animOpt.spriteName = spriteName;
+                animOpt.savePath = storePath;
+                animOpt.animNames = new System.Collections.Generic.List<string>();
+                animOpt.sliceOptions = sliceOpt;
+                animOpt.clipOptions = clipOpt;
+
+                SpriteEditFuncs.CreateAnimationsFromSprite(animatorStructs[0].sprite, animOpt);
             }
 
             GUILayout.EndHorizontal();

@@ -1,20 +1,45 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace SpriteEditor
 {
 
     public static class SpriteEditFuncs
     {
+        /// <summary>
+        /// Create animation clips from each row of sprites
+        /// </summary>
+        public static void CreateAnimationsFromSprite(Texture2D texture, AnimationOptions animOpt)
+        {
+            UnityEngine.Object[] objects = SliceSprite(texture, animOpt.sliceOptions);
+            List<Sprite> sprites = new List<Sprite>();
+
+            int rowCount = texture.height / animOpt.sliceOptions.heightPx;
+            for (int i = 0; i < rowCount; i++)
+            {
+                int columnCount = GetColumnCounts(texture, i, animOpt.sliceOptions);
+                for (int j = 0; j < columnCount; j++)
+                {
+                    sprites.Add(objects[i] as Sprite);
+                }
+
+                Debug.Log($"{animOpt.savePath}/anim_clip_{i}");
+
+                AssetDatabase.CreateAsset(CreateAnimationClip(sprites, animOpt.clipOptions), $"{animOpt.savePath}/anim_clip_{i}.anim");
+                AssetDatabase.SaveAssets();
+                sprites.Clear();
+            }
+        }
 
         /// <summary>
-        /// Be called for each sprite.
-        /// create animation clip of each row
+        /// Slice Sprite and return UnityEngine.Object[]
         /// </summary>
-        private static void SliceAndCreateClip(Texture2D texture, SpriteSliceOptions sliceOpt)
+        private static UnityEngine.Object[] SliceSprite(Texture2D texture, SpriteSliceOptions sliceOpt)
         {
             List<SpriteMetaData> mData = new List<SpriteMetaData>();
             Rect[] rects = InternalSpriteUtility.GenerateGridSpriteRectangles(
@@ -24,7 +49,7 @@ namespace SpriteEditor
             string texturePath = AssetDatabase.GetAssetPath(texture);
             TextureImporter ti = AssetImporter.GetAtPath(texturePath) as TextureImporter;
 
-            /* Sprite Setting / Slice */
+            /** Sprite Setting (can be customized) **/
             ti.isReadable = true;
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Multiple;
@@ -41,13 +66,13 @@ namespace SpriteEditor
                 mData.Add(smd);
             }
 
+            // HACK: Legacy code
             ti.spritesheet = mData.ToArray();
             AssetDatabase.ImportAsset(texturePath, ImportAssetOptions.ForceUpdate);
 
-
-            /* */
             UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(texturePath);
 
+            // HACK: Is it necessary?
             Array.Sort(assets, (a, b) =>
             {
                 var tmp1 = a.name.Split('_');
@@ -65,30 +90,7 @@ namespace SpriteEditor
                 else return 1;
             });
 
-
-            List<Sprite> sprites = new List<Sprite>();
-
-            // TODO :´Ù½Ã ¼¼¾ßµÊ
-            int animFrameCount = texture.width / sliceOpt.widthPx;
-
-            int cnt = 0;
-            for (int i = 1; i < assets.Length; i++)
-            {
-                if (assets[i] is Sprite)
-                {
-                    sprites.Add(assets[i] as Sprite);
-                    cnt++;
-
-                    if (cnt % animFrameCount == 0)
-                    {
-                        AssetDatabase.CreateAsset(CreateAnimationClip(sprites, new AnimClipOptions()), "PATH + NAME");
-                        AssetDatabase.SaveAssets();
-                        sprites.Clear();
-                    }
-                }
-            }
-
-            return;
+            return assets;
         }
 
         private static AnimationClip CreateAnimationClip(List<Sprite> sprites, AnimClipOptions clipOpt)
@@ -105,12 +107,11 @@ namespace SpriteEditor
             for (int i = 0; i < sprites.Count; i++)
             {
                 keyFrames[i] = new ObjectReferenceKeyframe();
-                keyFrames[i].time = i / 6f;
+                keyFrames[i].time = clipOpt.frameGap * i;
                 keyFrames[i].value = sprites[i];
-
             }
             keyFrames[keyFrames.Length - 1] = new ObjectReferenceKeyframe();
-            keyFrames[keyFrames.Length - 1].time = (keyFrames.Length - 1) / 6f;
+            keyFrames[keyFrames.Length - 1].time = clipOpt.frameGap * sprites.Count;
             keyFrames[keyFrames.Length - 1].value = sprites[0];
 
             AnimationUtility.SetObjectReferenceCurve(clip, curveBinding, keyFrames);
@@ -134,13 +135,6 @@ namespace SpriteEditor
                     return;
                 }
             }
-
-            /*
-            for (int i = 0; i < Enum.GetValues(typeof(AnimName)).Length; i++)
-            {
-                SliceSpriteSheet(spriteSheets[i], i);
-            }
-            */
 
             overrideController = new AnimatorOverrideController(baseController);
             clipOverrides = new AnimationClipOverrides(overrideController.overridesCount);
@@ -187,32 +181,29 @@ namespace SpriteEditor
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
         }
 
-        private static void CheckColumnCounts(int rows, int columns, int cellWidth, int cellHeight, Texture2D texture)
+        private static int GetColumnCounts(Texture2D texture, int rowIdx, SpriteSliceOptions sliceOpt)
         {
+            int columntCount = texture.width / sliceOpt.widthPx;
+            int cellWidth = sliceOpt.widthPx;
+            int cellHeight = sliceOpt.heightPx;
 
             if (!texture.isReadable)
             {
                 MakeTextureReadable(texture);
             }
 
-            for (int row = 0; row < rows; row++)
+            int validColumns = 0;
+            for (int col = 0; col < columntCount; col++)
             {
-                int validColumns = 0;
+                int x = col * (int)cellWidth;
+                int y = rowIdx * (int)cellHeight;
 
-                for (int col = 0; col < columns; col++)
+                if (!IsCellEmpty(texture, x, y, (int)cellWidth, (int)cellHeight))
                 {
-                    int x = col * (int)cellWidth;
-                    int y = row * (int)cellHeight;
-
-                    if (!IsCellEmpty(texture, x, y, (int)cellWidth, (int)cellHeight))
-                    {
-                        validColumns++;
-                    }
-
+                    validColumns++;
                 }
-
-                // TODO : sprite (has diff col count) Test needed
             }
+            return validColumns;
         }
 
         private static bool IsCellEmpty(Texture2D texture, int x, int y, int width, int height)
@@ -231,6 +222,32 @@ namespace SpriteEditor
             return true;
         }
 
+        public static string PreprocessPath(string absolutePath)
+        {
+            // start with "Assets/"
+            string relativePath = "";
+            string[] folders = System.IO.Directory.GetFiles(absolutePath);
+            bool isInAssets = false;
+            foreach(var folder in folders)
+            {
+                if (folder == "Assets" || folder == "assets")
+                {
+                    isInAssets = true;
+                }
+
+                if (isInAssets)
+                {
+                    relativePath += folder + "/";
+                }
+            }
+
+            if (relativePath == "")
+            {
+                return PreprocessPath(Constants.PATH_BASIC);
+            }
+
+            return relativePath;
+        }
     }
 
 }
