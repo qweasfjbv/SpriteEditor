@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.Animations;
 using UnityEngine;
 
 
@@ -67,6 +68,7 @@ namespace SpriteEditor
         public string spriteName;
         public string savePath;
         public List<string> animNames;
+        public FileNameConventionEnum fileNameConvention;
         public SpriteSliceOptions sliceOptions;
         public AnimClipOptions clipOptions;
     }

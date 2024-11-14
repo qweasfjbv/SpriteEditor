@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEditor;
+using SpriteEditor.Core;
 
-namespace SpriteEditor
+namespace SpriteEditor.Editor
 {
     public class SpriteAnimatorEditor : EditorWindow
     {
@@ -10,10 +11,12 @@ namespace SpriteEditor
         private int selectedTabIndex = 0;
         private string[] tabs = new string[]
         {
-            "Animation Maker", "Override Controller Setter"
+            "Animation Clip Maker",
+            "Override Controller Setter"
         };
 
         private GridByEnum gridByEnum = 0;
+        private FileNameConventionEnum fileNameConventionEnum = 0;
 
 
         private string spriteName;
@@ -26,15 +29,15 @@ namespace SpriteEditor
         private float pivotX;
         private float pivotY;
 
+        private bool isLoop;
+
         private AnimatorOverrideController overrideController;
         private UnityEditor.Animations.AnimatorController baseController;
 
-        private AnimationClipOverrides clipOverrides;
-
         public SpriteAnimatorStruct[] animatorStructs = new SpriteAnimatorStruct[0];
 
-        private bool isShowPreview = false;
 
+        private bool isShowPreview = false;
 
         private SpritePreviewPopup previewPopup;
         private float halfRatio;
@@ -43,14 +46,16 @@ namespace SpriteEditor
 
         private void InitOrLoad()
         {
-            // Layout Value
+            /** Layout Values **/
             halfRatio = 0.45f;
             halfLabelRatio = halfRatio * 0.33f;
             halfContentRatio = halfRatio * 0.66f;
 
-            // TODO : Save Needed
-            spriteName = "sprite_name";
-            storePath = SpriteEditFuncs.PreprocessPath(Constants.PATH_BASIC);
+            baseController = null;
+
+            // TODO : Save/Load Needed
+            spriteName = "sample";
+            storePath = StringUtils.PreprocessPath(Constants.PATH_BASIC);
 
             selectedTabIndex = 0;
             gridByEnum = 0;
@@ -125,22 +130,35 @@ namespace SpriteEditor
                     DrawAnimationMakerTab();
                     break;
                 case 1:
+                    DrawAnimatorClipChanger();
+                    break;
+                case 2:
                     DrawOverrideControllerSetterTab();
                     break;
             }
-
-
 
             spriteName = EditorGUILayout.TextField("Sprite Name", spriteName);
             baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
 
         }
+
+        private void DrawAnimationMakerTab()
+        {
+
+        }
+        private void DrawAnimatorClipChanger()
+        {
+
+        }
+        private void DrawOverrideControllerSetterTab()
+        {
+
+        }
+
         private void DrawSpriteSetting()
         {
 
             GUILayout.Label("Sprite Setting", EditorUtil.GetH3LabelStyle());
-
-
 
             GUILayout.BeginHorizontal(GUILayout.Width(position.width * halfRatio));
             GUILayout.Label("Grid By : ");
@@ -193,6 +211,22 @@ namespace SpriteEditor
 
             GUILayout.Label("Animation Setting", EditorUtil.GetH3LabelStyle());
 
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.4f));
+            GUILayout.Label("Clip Name Convention : ");
+            fileNameConventionEnum = (FileNameConventionEnum)EditorGUILayout.EnumPopup(fileNameConventionEnum);
+            GUILayout.EndHorizontal();
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.5f));
+            GUILayout.Label("Is Loop ");
+            isLoop = EditorGUILayout.Toggle(isLoop);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();
+            
+
             if (animatorStructs.Length > 0)
             {
                 foreach (var value in animatorStructs)
@@ -204,7 +238,7 @@ namespace SpriteEditor
 
                     for (int i = value.animationNames.Count; i < rowCount; i++)
                     {
-                        value.animationNames.Add($"sample_name_{i}");
+                        value.animationNames.Add($"motion{i}");
                     }
 
                     for (int i = value.animationNames.Count; i > rowCount; i--)
@@ -263,43 +297,41 @@ namespace SpriteEditor
             {
                 storePath = EditorUtility.OpenFolderPanel("Store path", "", "");
                 if (storePath == "") storePath = Constants.PATH_BASIC;
-                storePath = SpriteEditFuncs.PreprocessPath(storePath);
+                storePath = StringUtils.PreprocessPath(storePath);
             }
 
             if (GUILayout.Button("Create Animation"))
             {
-                SpriteSliceOptions sliceOpt = new SpriteSliceOptions();
-                sliceOpt.widthPx = widthPx;
-                sliceOpt.heightPx = heightPx;
-                sliceOpt.pivotX = pivotX;
-                sliceOpt.pivotY = pivotY;
+                foreach (var animatorStruct in animatorStructs)
+                {
 
-                AnimClipOptions clipOpt = new AnimClipOptions();
-                clipOpt.frameGap = 15;
-                clipOpt.isLoop = false;
+                    SpriteSliceOptions sliceOpt = new SpriteSliceOptions();
+                    sliceOpt.widthPx = widthPx;
+                    sliceOpt.heightPx = heightPx;
+                    sliceOpt.pivotX = pivotX;
+                    sliceOpt.pivotY = pivotY;
 
-                AnimationOptions animOpt = new AnimationOptions();
-                animOpt.spriteName = spriteName;
-                animOpt.savePath = storePath;
-                animOpt.animNames = new System.Collections.Generic.List<string>();
-                animOpt.sliceOptions = sliceOpt;
-                animOpt.clipOptions = clipOpt;
+                    AnimClipOptions clipOpt = new AnimClipOptions();
+                    clipOpt.frameGap = 15;
+                    clipOpt.isLoop = isLoop;
 
-                SpriteEditFuncs.CreateAnimationsFromSprite(animatorStructs[0].sprite, animOpt);
+                    AnimationOptions animOpt = new AnimationOptions();
+                    animOpt.spriteName = spriteName;
+                    animOpt.savePath = storePath;
+                    animOpt.animNames = new System.Collections.Generic.List<string>();
+                    animOpt.sliceOptions = sliceOpt;
+                    animOpt.clipOptions = clipOpt;
+                    animOpt.fileNameConvention = fileNameConventionEnum;
+                    for (int i = 0; i < animatorStruct.animationNames.Count; i++)
+                    {
+                        animOpt.animNames.Add(animatorStruct.animationNames[i]);
+                    }
+                    SpriteEditFuncs.CreateClipsFromSprite(animatorStruct.sprite, animOpt);
+                }
             }
 
             GUILayout.EndHorizontal();
         }
-
-        private void DrawAnimationMakerTab()
-        {
-
-        }
-        private void DrawOverrideControllerSetterTab()
-        {
-
-        }
-
 
         private void UpdateRowColumn(GridByEnum gridByEnum, Vector2Int textureSize, ref int widthPx, ref int heightPx, ref int colCount, ref int rowCount)
         {

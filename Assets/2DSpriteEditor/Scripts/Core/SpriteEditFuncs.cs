@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace SpriteEditor
+namespace SpriteEditor.Core
 {
 
     public static class SpriteEditFuncs
@@ -12,7 +12,7 @@ namespace SpriteEditor
         /// <summary>
         /// Create animation clips from each row of sprites
         /// </summary>
-        public static void CreateAnimationsFromSprite(Texture2D texture, AnimationOptions animOpt)
+        public static void CreateClipsFromSprite(Texture2D texture, AnimationOptions animOpt)
         {
             UnityEngine.Object[] objects = SliceSprite(texture, animOpt.sliceOptions);
             List<Sprite> sprites = new List<Sprite>();
@@ -28,7 +28,9 @@ namespace SpriteEditor
                     sprites.Add(objects[spritePointer++] as Sprite);
                 }
 
-                AssetDatabase.CreateAsset(CreateAnimationClip(sprites, animOpt.clipOptions), $"{animOpt.savePath}/anim_clip_{i}.anim");
+                string clipName = StringUtils.GetConventionedName(new string[] {"Anim", animOpt.spriteName, animOpt.animNames[i] }, animOpt.fileNameConvention);
+
+                AssetDatabase.CreateAsset(CreateAnimationClip(sprites, animOpt.clipOptions), $"{animOpt.savePath}/{clipName}.anim");
                 AssetDatabase.SaveAssets();
                 sprites.Clear();
             }
@@ -91,9 +93,12 @@ namespace SpriteEditor
             return assets;
         }
 
+        /// <summary>
+        /// Create animation clip from List<Sprite> and options
+        /// It returns clip object (asset saving needed)
+        /// </summary>
         private static AnimationClip CreateAnimationClip(List<Sprite> sprites, AnimClipOptions clipOpt)
         {
-            Debug.Log("SPRITE ANIM CLIP COUTN " + sprites.Count);
             AnimationClip clip = new AnimationClip();
 
             EditorCurveBinding curveBinding = new EditorCurveBinding();
@@ -169,7 +174,33 @@ namespace SpriteEditor
             Debug.Log("Animator and Override Controller created successfully.");
         }
 
+        public static string PreprocessPath(string absolutePath)
+        {
+            // start with "Assets/"
+            string relativePath = "";
+            string[] folders = absolutePath.Split('/');
+            bool isInAssets = false;
 
+            foreach (var folder in folders)
+            {
+                if (folder == "Assets" || folder == "assets")
+                {
+                    isInAssets = true;
+                }
+
+                if (isInAssets)
+                {
+                    relativePath += folder + "/";
+                }
+            }
+
+            if (relativePath == "")
+            {
+                return PreprocessPath(Constants.PATH_BASIC);
+            }
+
+            return relativePath;
+        }
 
         private static void MakeTextureReadable(Texture2D texture)
         {
@@ -221,33 +252,6 @@ namespace SpriteEditor
             return true;
         }
 
-        public static string PreprocessPath(string absolutePath)
-        {
-            // start with "Assets/"
-            string relativePath = "";
-            string[] folders = absolutePath.Split('/');
-            bool isInAssets = false;
-
-            foreach(var folder in folders)
-            {
-                if (folder == "Assets" || folder == "assets")
-                {
-                    isInAssets = true;
-                }
-
-                if (isInAssets)
-                {
-                    relativePath += folder + "/";
-                }
-            }
-
-            if (relativePath == "")
-            {
-                return PreprocessPath(Constants.PATH_BASIC);
-            }
-
-            return relativePath;
-        }
     }
 
 }
