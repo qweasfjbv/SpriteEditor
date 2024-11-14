@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -127,90 +128,43 @@ namespace SpriteEditor.Core
             return clip;
         }
 
-
-        public static void CreateAnimator(AnimatorOverrideController overrideController, UnityEditor.Animations.AnimatorController baseController,
-            AnimationClipOverrides clipOverrides, Texture2D[] spriteSheets, string storePath, string characterName)
+        /// <summary>
+        /// Create Override animator controller with Base anim controller and Clips
+        /// </summary>
+        public static void CreateAnimator(List<AnimationClip> clips, AnimatorOverrideOptions overrideOpt)
         {
-            for (int i = 0; i < spriteSheets.Length; i++)
-            {
-                if (spriteSheets[i] == null)
-                {
-                    Debug.LogError("Sprite Sheet is null.");
-                    return;
-                }
-            }
 
-            overrideController = new AnimatorOverrideController(baseController);
-            clipOverrides = new AnimationClipOverrides(overrideController.overridesCount);
-
-
+            AnimatorOverrideController overrideController = new AnimatorOverrideController(overrideOpt.baseController);
+            AnimationClipOverrides clipOverrides = new AnimationClipOverrides(overrideController.overridesCount);
             overrideController.GetOverrides(clipOverrides);
 
-            /*
-            for (int i = 0; i < Enum.GetValues(typeof(AnimName)).Length; i++)
-            {
-                if (i == 1)
-                {
-                    clipOverrides["Human_DieSoul"] = animationClips[1, 0];
-                }
-                else
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
+            var orderedOverrides = clipOverrides.OrderBy(item => item.Key.name).ToArray();
+            var orderedClips = clips.OrderBy(item => item.name).ToArray();
 
-                        clipOverrides["Human_" + Enum.GetName(typeof(AnimName), i) + "_" + Enum.GetName(typeof(AnimDir), j)] = animationClips[i, j];
-                        Debug.Log(animationClips[i, j].name);
-                    }
-                }
+            if (clips.Count() != orderedOverrides.Count())
+            {
+                Debug.LogError("Error: clips and clip overrides count mismatch!");
+                return;
             }
 
-            */
+            int count = 0;
+            for (int i = 0; i < orderedOverrides.Length; i++) {
+                orderedOverrides[i] = new KeyValuePair<AnimationClip, AnimationClip>(orderedOverrides[i].Key, orderedClips[count++]);
+            }
+
             overrideController.ApplyOverrides(clipOverrides);
-
-            AssetDatabase.CreateAsset(overrideController, storePath + "/" + characterName + "_Animator.overrideController");
+            string animatorName = StringUtils.GetConventionedName(
+                new string[] { "Override", overrideOpt.baseController.name }, 
+                overrideOpt.animOpt.fileNameConvention);
+            AssetDatabase.CreateAsset(overrideController, overrideOpt.animOpt.savePath + animatorName + ".overrideController");
             AssetDatabase.SaveAssets();
-
-
-            Debug.Log("Animator and Override Controller created successfully.");
         }
 
-        public static string PreprocessPath(string absolutePath)
-        {
-            // start with "Assets/"
-            string relativePath = "";
-            string[] folders = absolutePath.Split('/');
-            bool isInAssets = false;
 
-            foreach (var folder in folders)
-            {
-                if (folder == "Assets" || folder == "assets")
-                {
-                    isInAssets = true;
-                }
-
-                if (isInAssets)
-                {
-                    relativePath += folder + "/";
-                }
-            }
-
-            if (relativePath == "")
-            {
-                return PreprocessPath(Constants.PATH_BASIC);
-            }
-
-            return relativePath;
-        }
-
-        private static void MakeTextureReadable(Texture2D texture)
-        {
-            string assetPath = AssetDatabase.GetAssetPath(texture);
-
-            TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(assetPath);
-            textureImporter.isReadable = true;
-            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
-        }
-
+        /// <summary>
+        /// If there are nothing to slice, then except empty space for Loopable animation clip.
+        /// So we need to count column.
+        /// </summary>
         private static int GetColumnCounts(Texture2D texture, int rowIdx, SpriteSliceOptions sliceOpt)
         {
             int columntCount = texture.width / sliceOpt.widthPx;
@@ -235,7 +189,6 @@ namespace SpriteEditor.Core
             }
             return validColumns;
         }
-
         private static bool IsCellEmpty(Texture2D texture, int x, int y, int width, int height)
         {
             for (int i = x; i < x + width; i++)
@@ -250,6 +203,14 @@ namespace SpriteEditor.Core
                 }
             }
             return true;
+        }
+        private static void MakeTextureReadable(Texture2D texture)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+
+            TextureImporter textureImporter = (TextureImporter)AssetImporter.GetAtPath(assetPath);
+            textureImporter.isReadable = true;
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
         }
 
     }

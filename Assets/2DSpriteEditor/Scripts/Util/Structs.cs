@@ -22,15 +22,6 @@ namespace SpriteEditor
     }
 
     [System.Serializable]
-    public class RowPair
-    {
-        [SerializeField]
-        public string name = "";
-        [SerializeField]
-        public int column;
-    }
-
-    [System.Serializable]
     public class SpriteAnimatorStruct
     {
         public Texture2D sprite;
@@ -44,7 +35,7 @@ namespace SpriteEditor
         public int widthPx, heightPx;
         public float pivotX, pivotY;
         
-        // TODO: Optional (not implemented yet) **/
+        // TODO: Optional (not implemented yet)
         public int paddingX, paddingY;
         public int offsetX, offsetY;
     }
@@ -58,8 +49,8 @@ namespace SpriteEditor
     [System.Serializable]
     public struct AnimatorOverrideOptions
     {
-        public AnimationOptions animOptions;
-
+        public AnimationOptions animOpt;
+        public AnimatorController baseController;
     }
 
     [System.Serializable]

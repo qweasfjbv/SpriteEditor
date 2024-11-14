@@ -328,9 +328,17 @@ namespace SpriteEditor.Editor
                     }
                     SpriteEditFuncs.CreateClipsFromSprite(animatorStruct.sprite, animOpt);
                 }
+
+            }
+            if (GUILayout.Button("Create Override Controller"))
+            {
+                AnimatorOverrideOptions overrideOpt = new AnimatorOverrideOptions();
+                overrideOpt.baseController = baseController;
+                SpriteEditFuncs.CreateAnimator(null, overrideOpt);
             }
 
             GUILayout.EndHorizontal();
+
         }
 
         private void UpdateRowColumn(GridByEnum gridByEnum, Vector2Int textureSize, ref int widthPx, ref int heightPx, ref int colCount, ref int rowCount)
