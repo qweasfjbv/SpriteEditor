@@ -7,16 +7,17 @@ using UnityEngine;
 
 namespace SpriteEditor.Core
 {
-
     public static class SpriteEditFuncs
     {
         /// <summary>
         /// Create animation clips from each row of sprites
         /// </summary>
-        public static void CreateClipsFromSprite(Texture2D texture, AnimationOptions animOpt)
+        public static List<AnimationClip> CreateClipsFromSprite(Texture2D texture, in AnimationOptions animOpt)
         {
             UnityEngine.Object[] objects = SliceSprite(texture, animOpt.sliceOptions);
             List<Sprite> sprites = new List<Sprite>();
+            List<AnimationClip> clips = new List<AnimationClip>();
+            AnimationClip tmpClip;
 
             int spritePointer = 0;
             int rowCount = texture.height / animOpt.sliceOptions.heightPx;
@@ -24,6 +25,7 @@ namespace SpriteEditor.Core
             {
                 int columnCount = GetColumnCounts(texture, i, animOpt.sliceOptions);
 
+                sprites.Clear();
                 for (int j = 0; j < columnCount; j++)
                 {
                     sprites.Add(objects[spritePointer++] as Sprite);
@@ -31,16 +33,19 @@ namespace SpriteEditor.Core
 
                 string clipName = StringUtils.GetConventionedName(new string[] {"Anim", animOpt.spriteName, animOpt.animNames[i] }, animOpt.fileNameConvention);
 
-                AssetDatabase.CreateAsset(CreateAnimationClip(sprites, animOpt.clipOptions), $"{animOpt.savePath}/{clipName}.anim");
+                tmpClip = CreateAnimationClip(sprites, animOpt.clipOptions);
+                clips.Add(tmpClip);
+                AssetDatabase.CreateAsset(tmpClip, $"{animOpt.savePath}/{clipName}.anim");
                 AssetDatabase.SaveAssets();
-                sprites.Clear();
             }
+
+            return clips;
         }
 
         /// <summary>
         /// Slice Sprite and return UnityEngine.Object[]
         /// </summary>
-        private static UnityEngine.Object[] SliceSprite(Texture2D texture, SpriteSliceOptions sliceOpt)
+        private static UnityEngine.Object[] SliceSprite(Texture2D texture, in SpriteSliceOptions sliceOpt)
         {
             List<SpriteMetaData> mData = new List<SpriteMetaData>();
             Rect[] rects = InternalSpriteUtility.GenerateGridSpriteRectangles(
@@ -71,7 +76,9 @@ namespace SpriteEditor.Core
             ti.spritesheet = mData.ToArray();
             AssetDatabase.ImportAsset(texturePath, ImportAssetOptions.ForceUpdate);
 
-            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(texturePath);
+            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(texturePath)
+                .Where(sprite => !sprite.name.Equals(texture.name))
+                .ToArray();
 
             // HACK: Is it necessary?
             Array.Sort(assets, (a, b) =>
@@ -98,7 +105,7 @@ namespace SpriteEditor.Core
         /// Create animation clip from List<Sprite> and options
         /// It returns clip object (asset saving needed)
         /// </summary>
-        private static AnimationClip CreateAnimationClip(List<Sprite> sprites, AnimClipOptions clipOpt)
+        private static AnimationClip CreateAnimationClip(List<Sprite> sprites, in AnimClipOptions clipOpt)
         {
             AnimationClip clip = new AnimationClip();
 
@@ -112,17 +119,17 @@ namespace SpriteEditor.Core
             for (int i = 0; i < sprites.Count; i++)
             {
                 keyFrames[i] = new ObjectReferenceKeyframe();
-                keyFrames[i].time = clipOpt.frameGap * i/1000;
+                keyFrames[i].time = clipOpt.frameTime * i/1000;
                 keyFrames[i].value = sprites[i];
             }
             keyFrames[keyFrames.Length - 1] = new ObjectReferenceKeyframe();
-            keyFrames[keyFrames.Length - 1].time = clipOpt.frameGap * sprites.Count/1000;
+            keyFrames[keyFrames.Length - 1].time = clipOpt.frameTime * sprites.Count/1000;
             keyFrames[keyFrames.Length - 1].value = sprites[0];
 
             AnimationUtility.SetObjectReferenceCurve(clip, curveBinding, keyFrames);
 
             AnimationClipSettings setting = AnimationUtility.GetAnimationClipSettings(clip);
-            setting.loopTime = true;
+            setting.loopTime = clipOpt.isLoop;
             AnimationUtility.SetAnimationClipSettings(clip, setting);
 
             return clip;
@@ -131,11 +138,10 @@ namespace SpriteEditor.Core
         /// <summary>
         /// Create Override animator controller with Base anim controller and Clips
         /// </summary>
-        public static void CreateAnimator(List<AnimationClip> clips, AnimatorOverrideOptions overrideOpt)
+        public static void CreateOverrideAnimator(List<AnimationClip> clips, in AnimatorOverrideOptions overrideOpt)
         {
-
             AnimatorOverrideController overrideController = new AnimatorOverrideController(overrideOpt.baseController);
-            AnimationClipOverrides clipOverrides = new AnimationClipOverrides(overrideController.overridesCount);
+            List<KeyValuePair<AnimationClip, AnimationClip>> clipOverrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(overrideController.overridesCount);
             overrideController.GetOverrides(clipOverrides);
 
             var orderedOverrides = clipOverrides.OrderBy(item => item.Key.name).ToArray();
@@ -151,6 +157,7 @@ namespace SpriteEditor.Core
             for (int i = 0; i < orderedOverrides.Length; i++) {
                 orderedOverrides[i] = new KeyValuePair<AnimationClip, AnimationClip>(orderedOverrides[i].Key, orderedClips[count++]);
             }
+            clipOverrides = orderedOverrides.ToList();
 
             overrideController.ApplyOverrides(clipOverrides);
             string animatorName = StringUtils.GetConventionedName(
@@ -160,12 +167,11 @@ namespace SpriteEditor.Core
             AssetDatabase.SaveAssets();
         }
 
-
         /// <summary>
         /// If there are nothing to slice, then except empty space for Loopable animation clip.
         /// So we need to count column.
         /// </summary>
-        private static int GetColumnCounts(Texture2D texture, int rowIdx, SpriteSliceOptions sliceOpt)
+        private static int GetColumnCounts(Texture2D texture, int rowIdx, in SpriteSliceOptions sliceOpt)
         {
             int columntCount = texture.width / sliceOpt.widthPx;
             int cellWidth = sliceOpt.widthPx;
@@ -189,6 +195,7 @@ namespace SpriteEditor.Core
             }
             return validColumns;
         }
+
         private static bool IsCellEmpty(Texture2D texture, int x, int y, int width, int height)
         {
             for (int i = x; i < x + width; i++)

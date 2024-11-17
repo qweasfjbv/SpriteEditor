@@ -42,7 +42,7 @@ namespace SpriteEditor
 
     [System.Serializable]
     public struct AnimClipOptions {
-        public float frameGap;
+        public float frameTime;
         public bool isLoop;
     }
 

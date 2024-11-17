@@ -11,7 +11,6 @@ namespace SpriteEditor
             rect.height = height;
             EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 1));
         }
-
         public static GUIStyle GetH1LabelStyle()
         {
             GUIStyle labelStyle = new GUIStyle();
@@ -35,7 +34,6 @@ namespace SpriteEditor
             labelStyle.normal.textColor = Color.white;
             return labelStyle;
         }
-
         public static GUIStyle GetH3LabelStyle()
         {
             GUIStyle labelStyle = new GUIStyle();
@@ -50,7 +48,6 @@ namespace SpriteEditor
             labelStyle.normal.textColor = Color.white;
             return labelStyle;
         }
-
         public static GUIStyle GetTruncateLabelStyle()
         {
             GUIStyle labelStyle = new GUIStyle();

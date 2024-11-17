@@ -6,11 +6,12 @@ namespace SpriteEditor
     public static class Constants
     {
         /** Animator Parameters **/
-        public static readonly string ANIM_PARAM_WALK = "isWalk";
-        public static readonly string ANIM_PARAM_JUMP = "isJump";
-        public static readonly string ANIM_PARAM_FALL = "isFall";
-        public static readonly string ANIM_PARAM_ATK = "isAttack";
-        public static readonly string ANIM_PARAM_DEAD = "isDead";
+        public static readonly string ANIM_PARAM_WALK       = "IsWalk";
+        public static readonly string ANIM_PARAM_JUMP       = "IsJump";
+        public static readonly string ANIM_PARAM_FALL       = "IsFall";
+        public static readonly string ANIM_PARAM_ATK        = "IsAttack";
+        public static readonly string ANIM_PARAM_DAMAGED    = "IsDamaged";
+        public static readonly string ANIM_PARAM_DEAD       = "IsDead";
 
 
         /** Basic Settings (could be changed) **/

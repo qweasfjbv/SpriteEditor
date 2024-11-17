@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEditor;
 using SpriteEditor.Core;
+using System.Collections.Generic;
 
 namespace SpriteEditor.Editor
 {
     public class SpriteAnimatorEditor : EditorWindow
     {
 
-
+        /** Editor Tab **/
         private int selectedTabIndex = 0;
         private string[] tabs = new string[]
         {
@@ -18,10 +19,11 @@ namespace SpriteEditor.Editor
         private GridByEnum gridByEnum = 0;
         private FileNameConventionEnum fileNameConventionEnum = 0;
 
-
+        /** Basic Settings **/
         private string spriteName;
         private string storePath;
 
+        /** Sprite Settings **/
         private int widthPx;
         private int heightPx;
         private int rowCount;
@@ -29,14 +31,14 @@ namespace SpriteEditor.Editor
         private float pivotX;
         private float pivotY;
 
+        /** Animation Clip Settings **/
         private bool isLoop;
-
-        private AnimatorOverrideController overrideController;
+        private float frameTime;
         private UnityEditor.Animations.AnimatorController baseController;
-
         public SpriteAnimatorStruct[] animatorStructs = new SpriteAnimatorStruct[0];
 
 
+        /** Editor Layout Settings **/
         private bool isShowPreview = false;
 
         private SpritePreviewPopup previewPopup;
@@ -53,7 +55,7 @@ namespace SpriteEditor.Editor
 
             baseController = null;
 
-            // TODO : Save/Load Needed
+            // TODO - Save/Load Needed
             spriteName = "sample";
             storePath = StringUtils.PreprocessPath(Constants.PATH_BASIC);
 
@@ -63,6 +65,9 @@ namespace SpriteEditor.Editor
             widthPx = 8; heightPx = 8;
             rowCount = 1; columnCount = 1;
             pivotX = 0.5f; pivotY = 0.5f;
+
+            frameTime = 60f;
+            isLoop = false;
         }
 
         [MenuItem("Window/Sprite Editor/Helper Window")]
@@ -130,23 +135,16 @@ namespace SpriteEditor.Editor
                     DrawAnimationMakerTab();
                     break;
                 case 1:
-                    DrawAnimatorClipChanger();
-                    break;
-                case 2:
                     DrawOverrideControllerSetterTab();
                     break;
             }
 
             spriteName = EditorGUILayout.TextField("Sprite Name", spriteName);
-            baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
+            if (selectedTabIndex == 1)
+                baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
 
         }
-
         private void DrawAnimationMakerTab()
-        {
-
-        }
-        private void DrawAnimatorClipChanger()
         {
 
         }
@@ -203,7 +201,8 @@ namespace SpriteEditor.Editor
 
             GUILayout.EndHorizontal();
 
-            // TODO : Offset, Padding needed
+            // TODO - Offset, Padding needed
+            // -> drawline in preview popup should be modified
 
         }
         private void DrawAnimationSetting()
@@ -218,8 +217,14 @@ namespace SpriteEditor.Editor
             GUILayout.EndHorizontal();
 
             GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.2f));
+            GUILayout.Label("Frame time(ms) ");
+            frameTime = EditorGUILayout.FloatField(frameTime);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
 
-            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.5f));
+            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.2f));
             GUILayout.Label("Is Loop ");
             isLoop = EditorGUILayout.Toggle(isLoop);
             GUILayout.FlexibleSpace();
@@ -278,7 +283,6 @@ namespace SpriteEditor.Editor
                 }
                 else
                 {
-                    // ÇÁ¸®ºä ´Ý±â
                     ClosePreviewPopup();
                 }
             }
@@ -300,41 +304,38 @@ namespace SpriteEditor.Editor
                 storePath = StringUtils.PreprocessPath(storePath);
             }
 
-            if (GUILayout.Button("Create Animation"))
+            if (selectedTabIndex == 0)
             {
-                foreach (var animatorStruct in animatorStructs)
+                if (GUILayout.Button("Create Animation"))
                 {
-
-                    SpriteSliceOptions sliceOpt = new SpriteSliceOptions();
-                    sliceOpt.widthPx = widthPx;
-                    sliceOpt.heightPx = heightPx;
-                    sliceOpt.pivotX = pivotX;
-                    sliceOpt.pivotY = pivotY;
-
-                    AnimClipOptions clipOpt = new AnimClipOptions();
-                    clipOpt.frameGap = 15;
-                    clipOpt.isLoop = isLoop;
-
-                    AnimationOptions animOpt = new AnimationOptions();
-                    animOpt.spriteName = spriteName;
-                    animOpt.savePath = storePath;
-                    animOpt.animNames = new System.Collections.Generic.List<string>();
-                    animOpt.sliceOptions = sliceOpt;
-                    animOpt.clipOptions = clipOpt;
-                    animOpt.fileNameConvention = fileNameConventionEnum;
-                    for (int i = 0; i < animatorStruct.animationNames.Count; i++)
+                    foreach (var animatorStruct in animatorStructs)
                     {
-                        animOpt.animNames.Add(animatorStruct.animationNames[i]);
+                        AnimationOptions animOpt = GetAnimOption();
+                        for (int i = 0; i < animatorStruct.animationNames.Count; i++)
+                        {
+                            animOpt.animNames.Add(animatorStruct.animationNames[i]);
+                        }
+                        SpriteEditFuncs.CreateClipsFromSprite(animatorStruct.sprite, animOpt);
                     }
-                    SpriteEditFuncs.CreateClipsFromSprite(animatorStruct.sprite, animOpt);
                 }
-
             }
-            if (GUILayout.Button("Create Override Controller"))
+            else
             {
-                AnimatorOverrideOptions overrideOpt = new AnimatorOverrideOptions();
-                overrideOpt.baseController = baseController;
-                SpriteEditFuncs.CreateAnimator(null, overrideOpt);
+                if (GUILayout.Button("Create Override Controller"))
+                {
+                    List<AnimationClip> clips = new List<AnimationClip>();
+                    foreach (var animatorStruct in animatorStructs)
+                    {
+                        AnimationOptions animOpt = GetAnimOption();
+                        for (int i = 0; i < animatorStruct.animationNames.Count; i++)
+                        {
+                            animOpt.animNames.Add(animatorStruct.animationNames[i]);
+                        }
+                        clips.AddRange(SpriteEditFuncs.CreateClipsFromSprite(animatorStruct.sprite, animOpt));
+                    }
+
+                    SpriteEditFuncs.CreateOverrideAnimator(clips, GetOverrideOption());
+                }
             }
 
             GUILayout.EndHorizontal();
@@ -357,8 +358,6 @@ namespace SpriteEditor.Editor
 
             return;
         }
-
-
         private void ClosePreviewPopup()
         {
             if (previewPopup != null)
@@ -366,6 +365,37 @@ namespace SpriteEditor.Editor
                 previewPopup.Close();
                 previewPopup = null;
             }
+        }
+
+        private AnimationOptions GetAnimOption()
+        {
+            SpriteSliceOptions sliceOpt = new SpriteSliceOptions();
+            sliceOpt.widthPx = widthPx;
+            sliceOpt.heightPx = heightPx;
+            sliceOpt.pivotX = pivotX;
+            sliceOpt.pivotY = pivotY;
+
+            AnimClipOptions clipOpt = new AnimClipOptions();
+            clipOpt.frameTime = frameTime;
+            clipOpt.isLoop = isLoop;
+
+            AnimationOptions animOpt = new AnimationOptions();
+            animOpt.spriteName = spriteName;
+            animOpt.savePath = storePath;
+            animOpt.animNames = new System.Collections.Generic.List<string>();
+            animOpt.sliceOptions = sliceOpt;
+            animOpt.clipOptions = clipOpt;
+            animOpt.fileNameConvention = fileNameConventionEnum;
+
+            return animOpt;
+        }
+        private AnimatorOverrideOptions GetOverrideOption()
+        {
+            AnimatorOverrideOptions overrideOpt = new AnimatorOverrideOptions();
+            overrideOpt.baseController = baseController;
+            overrideOpt.animOpt = GetAnimOption();
+
+            return overrideOpt;
         }
     }
 }
