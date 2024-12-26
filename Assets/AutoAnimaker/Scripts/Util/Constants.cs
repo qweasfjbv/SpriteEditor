@@ -6,12 +6,9 @@ namespace AutoAnimaker
     public static class Constants
     {
         /** Animator Parameters **/
-        public static readonly string ANIM_PARAM_WALK       = "IsWalk";
-        public static readonly string ANIM_PARAM_JUMP       = "IsJump";
-        public static readonly string ANIM_PARAM_FALL       = "IsFall";
-        public static readonly string ANIM_PARAM_ATK        = "IsAttack";
-        public static readonly string ANIM_PARAM_DAMAGED    = "IsDamaged";
-        public static readonly string ANIM_PARAM_DEAD       = "IsDead";
+        public static readonly string ANIM_PARAM_IDLE       = "isIdle";
+        public static readonly string ANIM_PARAM_SPAWN       = "isSpawn";
+        public static readonly string ANIM_PARAM_HIT       = "isHit";
 
 
         /** Basic Settings (could be changed) **/

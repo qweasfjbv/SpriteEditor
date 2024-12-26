@@ -20,58 +20,28 @@ namespace AutoAnimaker.Demo
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha0))
+            for (int i = 1; i <= 3; i++) 
             {
-                ConvertAnimState(0);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                ConvertAnimState(1);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                ConvertAnimState(2);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                ConvertAnimState(3);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha4))
-            {
-                ConvertAnimState(4);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha5))
-            {
-                ConvertAnimState(5);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha6))
-            {
-                ConvertAnimState(6);
+                if(Input.GetKeyDown(KeyCode.Alpha0 + i))
+                {
+                    ConvertAnimState(i);
+                }
             }
         }
 
         private void ConvertAnimState(int id)
         {
-            animator.SetBool(Constants.ANIM_PARAM_WALK, false);
-            animator.SetBool(Constants.ANIM_PARAM_JUMP, false);
-            animator.SetBool(Constants.ANIM_PARAM_FALL, false);
-            animator.SetBool(Constants.ANIM_PARAM_ATK, false);
-            animator.SetBool(Constants.ANIM_PARAM_DAMAGED, false);
-            animator.SetBool(Constants.ANIM_PARAM_DEAD, false);
+            animator.SetBool(Constants.ANIM_PARAM_IDLE, false);
+            animator.SetBool(Constants.ANIM_PARAM_SPAWN, false);
+            animator.SetBool(Constants.ANIM_PARAM_HIT, false);
             switch (id)
             {
                 case 1:
-                    animator.SetBool(Constants.ANIM_PARAM_WALK, true); break;
+                    animator.SetBool(Constants.ANIM_PARAM_IDLE, true); break;
                 case 2:
-                    animator.SetBool(Constants.ANIM_PARAM_JUMP, true); break;
+                    animator.SetBool(Constants.ANIM_PARAM_SPAWN, true); break;
                 case 3:
-                    animator.SetBool(Constants.ANIM_PARAM_FALL, true); break;
-                case 4:
-                    animator.SetBool(Constants.ANIM_PARAM_ATK, true); break;
-                case 5:
-                    animator.SetBool(Constants.ANIM_PARAM_DAMAGED, true); break;
-                case 6:
-                    animator.SetBool(Constants.ANIM_PARAM_DEAD, true); break;
+                    animator.SetBool(Constants.ANIM_PARAM_HIT, true); break;
             }
         }
     }
