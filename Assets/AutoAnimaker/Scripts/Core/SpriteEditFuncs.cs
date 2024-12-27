@@ -23,7 +23,18 @@ namespace AutoAnimaker.Core
             int rowCount = texture.height / animOpt.sliceOptions.heightPx;
             for (int i = 0; i < rowCount; i++)
             {
-                int columnCount = GetColumnCounts(texture, i, animOpt.sliceOptions);
+                int columnCount = GetColumnCounts(texture, rowCount - i, animOpt.sliceOptions);
+
+                // Empty column -> ignore
+                if (columnCount == 0)
+                {
+                    Debug.Log($"Ignored Column : {i}");
+                    continue;
+                }
+                else
+                {
+                    Debug.Log($"UnIgnored column : {i} - {columnCount}");
+                }
 
                 sprites.Clear();
                 for (int j = 0; j < columnCount; j++)
@@ -35,6 +46,7 @@ namespace AutoAnimaker.Core
 
                 tmpClip = CreateAnimationClip(sprites, animOpt.clipOptions);
                 clips.Add(tmpClip);
+                // Debug.Log("Created : " + clipName);
                 AssetDatabase.CreateAsset(tmpClip, $"{animOpt.savePath}/{clipName}.anim");
                 AssetDatabase.SaveAssets();
             }
@@ -209,6 +221,7 @@ namespace AutoAnimaker.Core
                     }
                 }
             }
+
             return true;
         }
         private static void MakeTextureReadable(Texture2D texture)

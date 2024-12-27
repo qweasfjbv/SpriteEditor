@@ -1,7 +1,7 @@
-using UnityEngine;
-using UnityEditor;
 using AutoAnimaker.Core;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 namespace AutoAnimaker.Editor
 {
@@ -46,6 +46,10 @@ namespace AutoAnimaker.Editor
         private float halfLabelRatio;
         private float halfContentRatio;
 
+        /// <summary>
+        /// Currently initialization code is here.
+        /// TODO : Load code is needed
+        /// </summary>
         private void InitOrLoad()
         {
             /** Layout Values **/
@@ -85,22 +89,23 @@ namespace AutoAnimaker.Editor
         private void OnGUI()
         {
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.Height(600));
+            {
+                DrawHeader();
+                GUILayout.Space(20);
 
-            DrawHeader();
-            GUILayout.Space(20);
+                DrawSpriteSetting();
+                GUILayout.Space(10);
+                EditorUtil.GuiLine();
+                GUILayout.Space(10);
 
-            DrawSpriteSetting();
-            GUILayout.Space(10);
-            EditorUtil.GuiLine();
-            GUILayout.Space(10);
+                DrawAnimationSetting();
 
-            DrawAnimationSetting();
+                DrawPreviewButtons();
+                GUILayout.Space(20);
 
-            DrawPreviewButtons();
-            GUILayout.Space(20);
-
-            DrawFooter();
-            GUILayout.Space(20);
+                DrawFooter();
+                GUILayout.Space(20);
+            }
             GUILayout.EndScrollView();
         }
         
@@ -144,6 +149,7 @@ namespace AutoAnimaker.Editor
                 baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
 
         }
+
         private void DrawAnimationMakerTab()
         {
 
@@ -159,46 +165,50 @@ namespace AutoAnimaker.Editor
             GUILayout.Label("Sprite Setting", EditorUtil.GetH3LabelStyle());
 
             GUILayout.BeginHorizontal(GUILayout.Width(position.width * halfRatio));
-            GUILayout.Label("Grid By : ");
-            gridByEnum = (GridByEnum)EditorGUILayout.EnumPopup(gridByEnum);
+            {
+                GUILayout.Label("Grid By : ");
+                gridByEnum = (GridByEnum)EditorGUILayout.EnumPopup(gridByEnum);
+            }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-
-            switch (gridByEnum)
             {
-                case GridByEnum.CellCount:
-                    GUILayout.Label("Col Count ", GUILayout.Width(position.width * halfLabelRatio));
-                    columnCount = EditorGUILayout.IntSlider(columnCount, 1, 48, GUILayout.Width(position.width * halfContentRatio));
-                    break;
-                case GridByEnum.CellSize:
-                    GUILayout.Label("Width px ", GUILayout.Width(position.width * halfLabelRatio));
-                    widthPx = EditorGUILayout.IntSlider(widthPx, 8, 256, GUILayout.Width(position.width * halfContentRatio));
-                    break;
+                switch (gridByEnum)
+                {
+                    case GridByEnum.CellCount:
+                        GUILayout.Label("Col Count ", GUILayout.Width(position.width * halfLabelRatio));
+                        columnCount = EditorGUILayout.IntSlider(columnCount, 1, 48, GUILayout.Width(position.width * halfContentRatio));
+                        break;
+                    case GridByEnum.CellSize:
+                        GUILayout.Label("Width px ", GUILayout.Width(position.width * halfLabelRatio));
+                        widthPx = EditorGUILayout.IntSlider(widthPx, 8, 256, GUILayout.Width(position.width * halfContentRatio));
+                        break;
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Pivot X ", GUILayout.Width(position.width * halfLabelRatio));
+                pivotX = EditorGUILayout.Slider(pivotX, 0f, 1f, GUILayout.Width(position.width * halfContentRatio));
+                GUILayout.FlexibleSpace();
             }
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("Pivot X ", GUILayout.Width(position.width * halfLabelRatio));
-            pivotX = EditorGUILayout.Slider(pivotX, 0f, 1f, GUILayout.Width(position.width * halfContentRatio));
-            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            switch (gridByEnum)
             {
-                case GridByEnum.CellCount:
-                    GUILayout.Label("Row Count ", GUILayout.Width(position.width * halfLabelRatio));
-                    rowCount = EditorGUILayout.IntSlider(rowCount, 1, 48, GUILayout.Width(position.width * halfContentRatio));
-                    break;
-                case GridByEnum.CellSize:
-                    GUILayout.Label("Height px ", GUILayout.Width(position.width * halfLabelRatio));
-                    heightPx = EditorGUILayout.IntSlider(heightPx, 8, 256, GUILayout.Width(position.width * halfContentRatio));
-                    break;
+                switch (gridByEnum)
+                {
+                    case GridByEnum.CellCount:
+                        GUILayout.Label("Row Count ", GUILayout.Width(position.width * halfLabelRatio));
+                        rowCount = EditorGUILayout.IntSlider(rowCount, 1, 48, GUILayout.Width(position.width * halfContentRatio));
+                        break;
+                    case GridByEnum.CellSize:
+                        GUILayout.Label("Height px ", GUILayout.Width(position.width * halfLabelRatio));
+                        heightPx = EditorGUILayout.IntSlider(heightPx, 8, 256, GUILayout.Width(position.width * halfContentRatio));
+                        break;
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Pivot Y ", GUILayout.Width(position.width * halfLabelRatio));
+                pivotY = EditorGUILayout.Slider(pivotY, 0f, 1f, GUILayout.Width(position.width * halfContentRatio));
+                GUILayout.FlexibleSpace();
             }
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("Pivot Y ", GUILayout.Width(position.width * halfLabelRatio));
-            pivotY = EditorGUILayout.Slider(pivotY, 0f, 1f, GUILayout.Width(position.width * halfContentRatio));
-            GUILayout.FlexibleSpace();
-
             GUILayout.EndHorizontal();
 
             // TODO - Offset, Padding needed
@@ -211,27 +221,29 @@ namespace AutoAnimaker.Editor
             GUILayout.Label("Animation Setting", EditorUtil.GetH3LabelStyle());
 
             GUILayout.BeginHorizontal();
-            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.4f));
-            GUILayout.Label("Clip Name Convention : ");
-            fileNameConventionEnum = (FileNameConventionEnum)EditorGUILayout.EnumPopup(fileNameConventionEnum);
-            GUILayout.EndHorizontal();
+            {
+                GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.4f));
+                GUILayout.Label("Clip Name Convention : ");
+                fileNameConventionEnum = (FileNameConventionEnum)EditorGUILayout.EnumPopup(fileNameConventionEnum);
+                GUILayout.EndHorizontal();
 
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.2f));
-            GUILayout.Label("Frame time(ms) ");
-            frameTime = EditorGUILayout.FloatField(frameTime);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-            GUILayout.FlexibleSpace();
+                GUILayout.FlexibleSpace();
+                GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.2f));
+                GUILayout.Label("Frame time(ms) ");
+                frameTime = EditorGUILayout.FloatField(frameTime);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                GUILayout.FlexibleSpace();
 
-            GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.2f));
-            GUILayout.Label("Is Loop ");
-            isLoop = EditorGUILayout.Toggle(isLoop);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.2f));
+                GUILayout.Label("Is Loop ");
+                isLoop = EditorGUILayout.Toggle(isLoop);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
             GUILayout.EndHorizontal();
             
-
+            // 
             if (animatorStructs.Length > 0)
             {
                 foreach (var value in animatorStructs)
@@ -240,9 +252,9 @@ namespace AutoAnimaker.Editor
                     UpdateRowColumn(gridByEnum, new Vector2Int(value.sprite.width, value.sprite.height),
                         ref widthPx, ref heightPx, ref columnCount, ref rowCount);
 
-
                     for (int i = value.animationNames.Count; i < rowCount; i++)
                     {
+                        // HACK - default value : can be changed by string[]
                         value.animationNames.Add($"motion{i}");
                     }
 
@@ -252,7 +264,6 @@ namespace AutoAnimaker.Editor
                     }
                 }
             }
-
 
             ScriptableObject target = this;
             SerializedObject so = new SerializedObject(target);
@@ -342,7 +353,12 @@ namespace AutoAnimaker.Editor
 
         }
 
-        private void UpdateRowColumn(GridByEnum gridByEnum, Vector2Int textureSize, ref int widthPx, ref int heightPx, ref int colCount, ref int rowCount)
+        /// <summary>
+        /// Function to update row, column info
+        ///     with considering empty column.
+        /// </summary>
+        private void UpdateRowColumn(GridByEnum gridByEnum, Vector2Int textureSize, 
+            ref int widthPx, ref int heightPx, ref int colCount, ref int rowCount)
         {
             switch (gridByEnum)
             {
