@@ -23,18 +23,10 @@ namespace AutoAnimaker.Core
             int rowCount = texture.height / animOpt.sliceOptions.heightPx;
             for (int i = 0; i < rowCount; i++)
             {
-                int columnCount = GetColumnCounts(texture, rowCount - i, animOpt.sliceOptions);
+                int columnCount = GetColumnCounts(texture, rowCount - i - 1, animOpt.sliceOptions);
 
                 // Empty column -> ignore
-                if (columnCount == 0)
-                {
-                    Debug.Log($"Ignored Column : {i}");
-                    continue;
-                }
-                else
-                {
-                    Debug.Log($"UnIgnored column : {i} - {columnCount}");
-                }
+                if (columnCount == 0) continue;
 
                 sprites.Clear();
                 for (int j = 0; j < columnCount; j++)
