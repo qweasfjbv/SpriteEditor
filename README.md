@@ -27,11 +27,12 @@ If only C# scripts are used, then other versions are also sufficiently usable.
 
 #### 2. Enter the values you want
 
-![image](https://github.com/user-attachments/assets/df0b168c-7721-493f-a8da-a76b648c7752)
+![image](https://github.com/user-attachments/assets/d184df3b-9513-4e7d-8a01-602d5a9b787d)
 
 #### 3. Set store path / Click 'Create Animation(or Create Override Controller)' Button
 
-![image](https://github.com/user-attachments/assets/d80318b1-5686-4dac-9710-e6af282c0fdb)
+<image src="https://github.com/user-attachments/assets/d80318b1-5686-4dac-9710-e6af282c0fdb)"> 
+</image>
 
 #### 4-1
 If you clicked the 'Create Animation' button, you can get the animation clips
@@ -46,7 +47,8 @@ If you clicked the 'Create Override Controller' button, you will also receive th
 ## Result
 You can easily mass-produce characters with the same Animator State Machine structure.
 
-![AnimakerGif](https://github.com/user-attachments/assets/882c37db-9e5b-4b7f-8ef5-d891739aee74)
+<img src="https://github.com/user-attachments/assets/acb6827a-676e-41f0-b626-c7125a54bef2" width="600"></img>
+
 
 
 
