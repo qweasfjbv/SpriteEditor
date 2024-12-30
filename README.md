@@ -4,6 +4,9 @@ You can automatically create animation clips with just **one button!**
 
 > This is a demo version, so please let us know any areas that need additions or modifications via email.
 
+<img src="https://github.com/user-attachments/assets/4624c74e-0f4f-4608-adec-e59252bbde1b" width="500"></img>
+
+
 ### Features
 
 * **Comfortablilty** : This is a tool that helps minimize repetitive tasks.
@@ -31,8 +34,7 @@ If only C# scripts are used, then other versions are also sufficiently usable.
 
 #### 3. Set store path / Click 'Create Animation(or Create Override Controller)' Button
 
-<image src="https://github.com/user-attachments/assets/d80318b1-5686-4dac-9710-e6af282c0fdb)"> 
-</image>
+![image](https://github.com/user-attachments/assets/d80318b1-5686-4dac-9710-e6af282c0fdb)
 
 #### 4-1
 If you clicked the 'Create Animation' button, you can get the animation clips
