@@ -1,5 +1,7 @@
 using AutoAnimaker.Core;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,6 +9,9 @@ namespace AutoAnimaker.Editor
 {
     public class SpriteAnimatorEditor : EditorWindow
     {
+
+        private List<AnimOptionSO> scriptableObjects = new List<AnimOptionSO>();
+        private AnimOptionSO selectedObject;
 
         /** Editor Tab **/
         private int selectedTabIndex = 0;
@@ -83,6 +88,16 @@ namespace AutoAnimaker.Editor
             window.maxSize = new Vector2(600, 600);
             Rect tmpRect = window.position;
             window.position = tmpRect;
+
+        }
+
+        private void OnEnable()
+        {
+            scriptableObjects = PresetLoader.LoadScriptableObjects();
+            if (scriptableObjects != null && scriptableObjects.Count > 0 )
+            {
+                selectedObject = scriptableObjects[0];
+            }
         }
 
         private Vector2 scrollPosition = Vector2.zero;
@@ -148,6 +163,24 @@ namespace AutoAnimaker.Editor
             if (selectedTabIndex == 1)
                 baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
 
+            // ScriptableObject Selection Dropdown
+            if (scriptableObjects.Count > 0)
+            {
+                var names = scriptableObjects.Select(obj => obj.name).ToArray();
+                int selectedIndex = scriptableObjects.IndexOf(selectedObject);
+                int newSelectedIndex = EditorGUILayout.Popup("Select ScriptableObject", selectedIndex, names);
+
+                if (newSelectedIndex != selectedIndex)
+                {
+                    selectedObject = scriptableObjects[newSelectedIndex];
+                    Debug.Log("Selected ScriptableObject: " + selectedObject.name);
+                }
+            }
+
+            if (GUILayout.Button("SAVE AS"))
+            {
+                SavePreset();
+            }
         }
 
         private void DrawAnimationMakerTab()
@@ -413,5 +446,38 @@ namespace AutoAnimaker.Editor
 
             return overrideOpt;
         }
+
+
+        public void SavePreset()
+        {
+            selectedObject.spriteName = spriteName;
+            selectedObject.baseController = baseController;
+
+            selectedObject.gridBy = gridByEnum;
+            selectedObject.widthPx = widthPx;
+            selectedObject.heightPx = heightPx;
+            selectedObject.colCount = columnCount;
+            selectedObject.rowCount = rowCount;
+            selectedObject.pivotX = pivotX;
+            selectedObject.pivotY = pivotY;
+
+            selectedObject.nameConvention = fileNameConventionEnum;
+            selectedObject.frameTime = frameTime;
+            selectedObject.isLoop = isLoop;
+
+            // NOT REF. Deep Copy
+            Array.Clear(selectedObject.animatorStructs, 0, selectedObject.animatorStructs.Count());
+            selectedObject.animatorStructs = new SpriteAnimatorStruct[animatorStructs.Length];
+            for (int i = 0; i < animatorStructs.Length; i++)
+            {
+                selectedObject.animatorStructs[i] = animatorStructs[i].GetDeepCopy();
+            }
+        }
+
+        public void LoadPreset()
+        {
+
+        }
+
     }
 }

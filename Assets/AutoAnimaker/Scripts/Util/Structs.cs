@@ -12,6 +12,14 @@ namespace AutoAnimaker
         public Texture2D sprite;
         [SerializeField]
         public List<string> animationNames = new List<string>();
+
+        public SpriteAnimatorStruct GetDeepCopy()
+        {
+            SpriteAnimatorStruct tmpStruct = new SpriteAnimatorStruct();
+            tmpStruct.animationNames = new List<string>(this.animationNames);
+            tmpStruct.sprite = this.sprite;
+            return tmpStruct;
+        }
     }
     
     [System.Serializable]

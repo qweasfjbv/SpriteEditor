@@ -16,6 +16,7 @@ namespace AutoAnimaker
 
         /** Basic Settings (could be changed) **/
         public static readonly string PATH_BASIC = Application.dataPath;
+        public static readonly string PATH_PRESET = "Assets/AutoAnimaker/OptionPresets";
 
     }
 }

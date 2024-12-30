@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 844afcc024a16fc4cb4b47a69053891e, type: 3}
+  m_Name: Default
+  m_EditorClassIdentifier: 
+  spriteName: sample
+  baseController: {fileID: 0}
+  gridBy: 0
+  widthPx: 8
+  heightPx: 8
+  colCount: 32
+  rowCount: 32
+  pivotX: 0.5
+  pivotY: 0.5
+  nameConvention: 0
+  frameTime: 60
+  isLoop: 0
+  animatorStructs:
+  - sprite: {fileID: 2800000, guid: 0708f5f937a8c1742a6ac36c70738ef7, type: 3}
+    animationNames:
+    - motion0
+    - motion1
+    - motion2
+    - motion3
+    - motion4
+    - motion5
+    - motion6
+    - motion7
+    - motion8
+    - motion9
+    - motion10
+    - motion11
+    - motion12
+    - motion13
+    - motion14
+    - motion15
+    - motion16
+    - motion17
+    - motion18
+    - motion19
+    - motion20
+    - motion21
+    - motion22
+    - motion23
+    - motion24
+    - motion25
+    - motion26
+    - motion27
+    - motion28
+    - motion29
+    - motion30
+    - motion31
+  storePath: Assets/
