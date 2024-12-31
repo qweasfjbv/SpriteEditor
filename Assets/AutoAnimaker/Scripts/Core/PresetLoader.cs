@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 namespace AutoAnimaker.Core
 {
@@ -24,6 +25,42 @@ namespace AutoAnimaker.Core
             }
 
             return scriptableObjects;
+        }
+
+        public static AnimOptionSO CreateNewPreset(string name)
+        {
+            if (HasFilesInFolder(name + ".asset")) {
+                return null;
+            }
+
+            AnimOptionSO newAsset = ScriptableObject.CreateInstance<AnimOptionSO>();
+            AssetDatabase.CreateAsset(newAsset, Constants.PATH_PRESET + "/" + name + ".asset");
+            AssetDatabase.SaveAssets();
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = newAsset;
+            return newAsset;
+        }
+
+        private static bool HasFilesInFolder(string name)
+        {
+            string[] assetGuids = AssetDatabase.FindAssets("", new[] { Constants.PATH_PRESET });
+
+            foreach (string guid in assetGuids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (System.IO.Path.GetFileName(assetPath.ToUpper()) == name.ToUpper())
+                {
+                    return true; // File exists
+                }
+            }
+
+            return false; // No file exists
+        }
+
+        public static void RemovePreset(string name)
+        {
+            AssetDatabase.DeleteAsset(Constants.PATH_PRESET + "/" + name + ".asset"); 
+            AssetDatabase.SaveAssets();              
         }
     }
 }

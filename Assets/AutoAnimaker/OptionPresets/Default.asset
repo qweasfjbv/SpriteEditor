@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spriteName: sample
   baseController: {fileID: 0}
-  gridBy: 0
+  gridBy: 1
   widthPx: 8
   heightPx: 8
   colCount: 32
@@ -28,8 +28,8 @@ MonoBehaviour:
   - sprite: {fileID: 2800000, guid: 0708f5f937a8c1742a6ac36c70738ef7, type: 3}
     animationNames:
     - motion0
-    - motion1
-    - motion2
+    - hello
+    - test1
     - motion3
     - motion4
     - motion5

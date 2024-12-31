@@ -2,6 +2,7 @@ using AutoAnimaker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,12 +18,15 @@ namespace AutoAnimaker.Editor
         private int selectedTabIndex = 0;
         private string[] tabs = new string[]
         {
-            "Animation Clip Maker",
-            "Override Controller Setter"
+            "Anim Clip Maker",
+            "Animator Override Controller"
         };
 
         private GridByEnum gridByEnum = 0;
         private FileNameConventionEnum fileNameConventionEnum = 0;
+
+        /** Preset Settings **/
+        private bool isPresetFold;
 
         /** Basic Settings **/
         private string spriteName;
@@ -51,6 +55,8 @@ namespace AutoAnimaker.Editor
         private float halfLabelRatio;
         private float halfContentRatio;
 
+        private string[] presetNames;
+
         /// <summary>
         /// Currently initialization code is here.
         /// TODO : Load code is needed
@@ -77,6 +83,8 @@ namespace AutoAnimaker.Editor
 
             frameTime = 60f;
             isLoop = false;
+
+            isPresetFold = false;
         }
 
         [MenuItem("Window/Auto Animaker/Helper Window")]
@@ -105,8 +113,8 @@ namespace AutoAnimaker.Editor
         {
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true, GUILayout.Height(600));
             {
+
                 DrawHeader();
-                GUILayout.Space(20);
 
                 DrawSpriteSetting();
                 GUILayout.Space(10);
@@ -120,6 +128,8 @@ namespace AutoAnimaker.Editor
 
                 DrawFooter();
                 GUILayout.Space(20);
+
+
             }
             GUILayout.EndScrollView();
         }
@@ -144,31 +154,68 @@ namespace AutoAnimaker.Editor
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
+            isPresetFold = EditorGUILayout.Foldout(isPresetFold, "Preset Settings");
+
             GUILayout.Space(10);
+            EditorUtil.GuiLine(1);
+            GUILayout.Space(10);
+            
+            if (isPresetFold)
+            {
+                DrawPresetLoadTab();
+
+                GUILayout.Space(10);
+                EditorUtil.GuiLine(1);
+                GUILayout.Space(10);
+            }
+
+        }
+
+        private string presetName;
+        private void DrawPresetLoadTab()
+        {
+            GUILayout.Label("Create Preset", EditorUtil.GetH3LabelStyle());
+
+            EditorGUILayout.BeginHorizontal();
+            {
+                EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.4f));
+                GUILayout.Label("Preset Name");
+                presetName = EditorGUILayout.TextField("", presetName);
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.3f));
+                if (GUILayout.Button("Save as new preset..."))
+                {
+                    AnimOptionSO tmpSo = PresetLoader.CreateNewPreset(presetName);
+                    if (tmpSo == null)
+                    {
+                        EditorUtility.DisplayDialog("Denied",
+                            "The preset with the same name already exists.", "OK");
+                    }
+                    else
+                    {
+                        SavePreset(tmpSo);
+                        scriptableObjects = PresetLoader.LoadScriptableObjects();
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+                GUILayout.FlexibleSpace();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.Space(20);
 
             EditorUtil.GuiLine(1);
             GUILayout.Space(10);
 
-            switch (selectedTabIndex)
-            {
-                case 0:
-                    DrawAnimationMakerTab();
-                    break;
-                case 1:
-                    DrawOverrideControllerSetterTab();
-                    break;
-            }
-
-            spriteName = EditorGUILayout.TextField("Sprite Name", spriteName);
-            if (selectedTabIndex == 1)
-                baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
+            GUILayout.Label("Save/Load Preset", EditorUtil.GetH3LabelStyle());
 
             // ScriptableObject Selection Dropdown
             if (scriptableObjects.Count > 0)
             {
-                var names = scriptableObjects.Select(obj => obj.name).ToArray();
+                presetNames = scriptableObjects.Select(obj => obj.name).ToArray();
                 int selectedIndex = scriptableObjects.IndexOf(selectedObject);
-                int newSelectedIndex = EditorGUILayout.Popup("Select ScriptableObject", selectedIndex, names);
+                int newSelectedIndex = EditorGUILayout.Popup("Select Preset", selectedIndex, presetNames, GUILayout.Width(position.width * 0.6f));
 
                 if (newSelectedIndex != selectedIndex)
                 {
@@ -177,25 +224,37 @@ namespace AutoAnimaker.Editor
                 }
             }
 
-            if (GUILayout.Button("SAVE AS"))
+            GUILayout.Space(10);
+
+            EditorGUILayout.BeginHorizontal();
             {
-                SavePreset();
+                Color saveColor = GUI.backgroundColor;
+
+                if (GUILayout.Button("Save Preset"))
+                    SavePreset(selectedObject);
+
+                if (GUILayout.Button("Load Preset"))
+                    LoadPreset();
+
+                GUI.backgroundColor = Color.red;
+                if (GUILayout.Button("Remove Preset"))
+                    RemovePreset();
+
+                GUI.backgroundColor = saveColor;
             }
+            EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawAnimationMakerTab()
-        {
-
-        }
-        private void DrawOverrideControllerSetterTab()
-        {
-
-        }
 
         private void DrawSpriteSetting()
         {
-
             GUILayout.Label("Sprite Setting", EditorUtil.GetH3LabelStyle());
+
+            spriteName = EditorGUILayout.TextField("Sprite Name", spriteName);
+            if (selectedTabIndex == 1)
+                baseController = (UnityEditor.Animations.AnimatorController)EditorGUILayout.ObjectField("Base Controller", baseController, typeof(UnityEditor.Animations.AnimatorController), false);
+
+            GUILayout.Space(10);
 
             GUILayout.BeginHorizontal(GUILayout.Width(position.width * halfRatio));
             {
@@ -448,35 +507,71 @@ namespace AutoAnimaker.Editor
         }
 
 
-        public void SavePreset()
+        public void SavePreset(AnimOptionSO optionSO)
         {
-            selectedObject.spriteName = spriteName;
-            selectedObject.baseController = baseController;
+            optionSO.spriteName = spriteName;
+            optionSO.baseController = baseController;
 
-            selectedObject.gridBy = gridByEnum;
-            selectedObject.widthPx = widthPx;
-            selectedObject.heightPx = heightPx;
-            selectedObject.colCount = columnCount;
-            selectedObject.rowCount = rowCount;
-            selectedObject.pivotX = pivotX;
-            selectedObject.pivotY = pivotY;
+            optionSO.gridBy = gridByEnum;
+            optionSO.widthPx = widthPx;
+            optionSO.heightPx = heightPx;
+            optionSO.colCount = columnCount;
+            optionSO.rowCount = rowCount;
+            optionSO.pivotX = pivotX;
+            optionSO.pivotY = pivotY;
 
-            selectedObject.nameConvention = fileNameConventionEnum;
-            selectedObject.frameTime = frameTime;
-            selectedObject.isLoop = isLoop;
+            optionSO.nameConvention = fileNameConventionEnum;
+            optionSO.frameTime = frameTime;
+            optionSO.isLoop = isLoop;
 
             // NOT REF. Deep Copy
-            Array.Clear(selectedObject.animatorStructs, 0, selectedObject.animatorStructs.Count());
-            selectedObject.animatorStructs = new SpriteAnimatorStruct[animatorStructs.Length];
+            Array.Clear(optionSO.animatorStructs, 0, optionSO.animatorStructs.Count());
+            optionSO.animatorStructs = new SpriteAnimatorStruct[animatorStructs.Length];
             for (int i = 0; i < animatorStructs.Length; i++)
             {
-                selectedObject.animatorStructs[i] = animatorStructs[i].GetDeepCopy();
+                optionSO.animatorStructs[i] = animatorStructs[i].GetDeepCopy();
             }
         }
 
         public void LoadPreset()
         {
+            spriteName = selectedObject.spriteName;
+            baseController = selectedObject.baseController;
 
+            gridByEnum = selectedObject.gridBy;
+            widthPx = selectedObject.widthPx;
+            heightPx = selectedObject.heightPx;
+            columnCount = selectedObject.colCount;
+            rowCount = selectedObject.rowCount;
+            pivotX = selectedObject.pivotX;
+            pivotY = selectedObject.pivotY;
+
+            fileNameConventionEnum = selectedObject.nameConvention;
+            frameTime = selectedObject.frameTime;
+            isLoop = selectedObject.isLoop;
+
+            Array.Clear(animatorStructs, 0, animatorStructs.Count());
+            animatorStructs = new SpriteAnimatorStruct[selectedObject.animatorStructs.Length];
+            for (int i = 0; i < selectedObject.animatorStructs.Length; i++)
+            {
+                animatorStructs[i] = selectedObject.animatorStructs[i].GetDeepCopy();
+            }
+        }
+
+
+        private void RemovePreset()
+        {
+            if (scriptableObjects.Count <= 1)
+            {
+                EditorUtility.DisplayDialog("Denied",
+                    "You cannot delete this asset because it is the only one remaining.",
+                    "OK");
+                return;
+            }
+
+            PresetLoader.RemovePreset(selectedObject.name);
+            scriptableObjects = PresetLoader.LoadScriptableObjects();
+            selectedObject = scriptableObjects[0];
         }
 
     }

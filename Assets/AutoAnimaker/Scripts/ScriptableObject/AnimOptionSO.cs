@@ -24,7 +24,7 @@ namespace AutoAnimaker
         public FileNameConventionEnum nameConvention;
         public float frameTime;
         public bool isLoop;
-        public SpriteAnimatorStruct[] animatorStructs;
+        public SpriteAnimatorStruct[] animatorStructs = new SpriteAnimatorStruct[0];
         public string storePath;
     }
 
