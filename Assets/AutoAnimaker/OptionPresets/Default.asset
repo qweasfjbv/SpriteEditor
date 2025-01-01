@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 844afcc024a16fc4cb4b47a69053891e, type: 3}
   m_Name: Default
   m_EditorClassIdentifier: 
-  spriteName: sample
-  baseController: {fileID: 0}
+  spriteName: hello
+  baseController: {fileID: 9100000, guid: b6c224e7ce815d649a7593f65968e852, type: 2}
   gridBy: 1
   widthPx: 8
   heightPx: 8
