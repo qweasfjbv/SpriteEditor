@@ -154,6 +154,8 @@ namespace AutoAnimaker.Editor
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
+            GUILayout.Space(10);
+
             isPresetFold = EditorGUILayout.Foldout(isPresetFold, "Preset Settings");
 
             GUILayout.Space(10);
@@ -165,7 +167,7 @@ namespace AutoAnimaker.Editor
                 DrawPresetLoadTab();
 
                 GUILayout.Space(10);
-                EditorUtil.GuiLine(1);
+                EditorUtil.GuiLine(3);
                 GUILayout.Space(10);
             }
 
@@ -186,16 +188,24 @@ namespace AutoAnimaker.Editor
                 EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.3f));
                 if (GUILayout.Button("Save as new preset..."))
                 {
-                    AnimOptionSO tmpSo = PresetLoader.CreateNewPreset(presetName);
-                    if (tmpSo == null)
+                    if (presetName.Length == 0)
                     {
                         EditorUtility.DisplayDialog("Denied",
-                            "The preset with the same name already exists.", "OK");
+                            "Preset name cannot be empty", "OK");
                     }
                     else
                     {
-                        SavePreset(tmpSo);
-                        scriptableObjects = PresetLoader.LoadScriptableObjects();
+                        AnimOptionSO tmpSo = PresetLoader.CreateNewPreset(presetName);
+                        if (tmpSo == null)
+                        {
+                            EditorUtility.DisplayDialog("Denied",
+                                "The preset with the same name already exists.", "OK");
+                        }
+                        else
+                        {
+                            SavePreset(tmpSo);
+                            scriptableObjects = PresetLoader.LoadScriptableObjects();
+                        }
                     }
                 }
                 EditorGUILayout.EndHorizontal();
