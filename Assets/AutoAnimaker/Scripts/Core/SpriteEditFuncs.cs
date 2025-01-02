@@ -21,6 +21,10 @@ namespace AutoAnimaker.Core
 
             int spritePointer = 0;
             int rowCount = texture.height / animOpt.sliceOptions.heightPx;
+
+            AssetDatabase.CreateFolder(animOpt.savePath.Substring(0, animOpt.savePath.Length - 1), animOpt.spriteName);
+            AssetDatabase.SaveAssets();
+
             for (int i = 0; i < rowCount; i++)
             {
                 int columnCount = GetColumnCounts(texture, rowCount - i - 1, animOpt.sliceOptions);
@@ -38,8 +42,8 @@ namespace AutoAnimaker.Core
 
                 tmpClip = CreateAnimationClip(sprites, animOpt.clipOptions);
                 clips.Add(tmpClip);
-                // Debug.Log("Created : " + clipName);
-                AssetDatabase.CreateAsset(tmpClip, $"{animOpt.savePath}/{clipName}.anim");
+
+                AssetDatabase.CreateAsset(tmpClip, $"{animOpt.savePath}{animOpt.spriteName}/{clipName}.anim");
                 AssetDatabase.SaveAssets();
             }
 
@@ -51,11 +55,6 @@ namespace AutoAnimaker.Core
         /// </summary>
         private static UnityEngine.Object[] SliceSprite(Texture2D texture, in SpriteSliceOptions sliceOpt)
         {
-            List<SpriteMetaData> mData = new List<SpriteMetaData>();
-            Rect[] rects = InternalSpriteUtility.GenerateGridSpriteRectangles(
-                texture, Vector2.zero, new Vector2(sliceOpt.widthPx, sliceOpt.heightPx), Vector2.zero);
-
-
             string texturePath = AssetDatabase.GetAssetPath(texture);
             TextureImporter ti = AssetImporter.GetAtPath(texturePath) as TextureImporter;
 
@@ -63,8 +62,15 @@ namespace AutoAnimaker.Core
             ti.isReadable = true;
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Multiple;
-            ti.filterMode = FilterMode.Point;       
+            ti.filterMode = FilterMode.Point;
             ti.textureCompression = TextureImporterCompression.Uncompressed;
+
+            AssetDatabase.ImportAsset(texturePath, ImportAssetOptions.ForceUpdate);
+            EditorUtility.SetDirty(ti);
+
+            List<SpriteMetaData> mData = new List<SpriteMetaData>();
+            Rect[] rects = InternalSpriteUtility.GenerateGridSpriteRectangles(
+                texture, Vector2.zero, new Vector2(sliceOpt.widthPx, sliceOpt.heightPx), Vector2.zero);
 
             for (int i = 0; i < rects.Length; i++)
             {
@@ -167,7 +173,7 @@ namespace AutoAnimaker.Core
             string animatorName = StringUtils.GetConventionedName(
                 new string[] { "Override", overrideOpt.baseController.name }, 
                 overrideOpt.animOpt.fileNameConvention);
-            AssetDatabase.CreateAsset(overrideController, overrideOpt.animOpt.savePath + animatorName + ".overrideController");
+            AssetDatabase.CreateAsset(overrideController, $"{overrideOpt.animOpt.savePath}{overrideOpt.animOpt.spriteName}/{animatorName}.overrideController");
             AssetDatabase.SaveAssets();
         }
 

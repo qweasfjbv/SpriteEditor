@@ -10,19 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 844afcc024a16fc4cb4b47a69053891e, type: 3}
-  m_Name: Default
+  m_Name: Enemy
   m_EditorClassIdentifier: 
-  spriteName: sample
+  spriteName: 
   baseController: {fileID: 0}
   gridBy: 0
-  widthPx: 8
-  heightPx: 8
-  colCount: 1
-  rowCount: 1
-  pivotX: 0.5
-  pivotY: 0.5
+  widthPx: 0
+  heightPx: 0
+  colCount: 0
+  rowCount: 0
+  pivotX: 0
+  pivotY: 0
   nameConvention: 0
-  frameTime: 60
+  frameTime: 0
   isLoop: 0
   animatorStructs: []
-  storePath: Assets/
+  storePath: 

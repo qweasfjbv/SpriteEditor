@@ -43,7 +43,7 @@ namespace AutoAnimaker.Demo
                     break;
                 case 1:
                     transform.position = knightPos;
-                    upperText.text = "anim clip example";
+                    upperText.text = "override example";
                     lowerText.text = "press 1-6";
                     break;
             }

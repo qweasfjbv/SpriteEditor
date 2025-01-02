@@ -2,7 +2,6 @@ using AutoAnimaker.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEditor;
 using UnityEngine;
 
@@ -71,18 +70,10 @@ namespace AutoAnimaker.Editor
             baseController = null;
 
             // TODO - Save/Load Needed
-            spriteName = "sample";
-            storePath = StringUtils.PreprocessPath(Constants.PATH_BASIC);
-
             selectedTabIndex = 0;
             gridByEnum = 0;
 
-            widthPx = 8; heightPx = 8;
-            rowCount = 1; columnCount = 1;
-            pivotX = 0.5f; pivotY = 0.5f;
-
-            frameTime = 60f;
-            isLoop = false;
+            LoadPreset();
 
             isPresetFold = false;
         }
@@ -106,6 +97,11 @@ namespace AutoAnimaker.Editor
             {
                 selectedObject = scriptableObjects[0];
             }
+        }
+
+        private void OnDisable()
+        {
+            ClosePreviewPopup();
         }
 
         private Vector2 scrollPosition = Vector2.zero;
@@ -188,7 +184,7 @@ namespace AutoAnimaker.Editor
                 EditorGUILayout.BeginHorizontal(GUILayout.Width(position.width * 0.3f));
                 if (GUILayout.Button("Save as new preset..."))
                 {
-                    if (presetName.Length == 0)
+                    if (presetName == null || presetName.Length == 0)
                     {
                         EditorUtility.DisplayDialog("Denied",
                             "Preset name cannot be empty", "OK");
@@ -391,7 +387,8 @@ namespace AutoAnimaker.Editor
                         previewPopup.PreviewSprite = Sprite.Create(animatorStructs[0].sprite, rect, new Vector2(0.5f, 0.5f));
                         previewPopup.RowCount = rowCount;
                         previewPopup.ColumnCount = columnCount;
-                        previewPopup.ShowAsDropDown(new Rect(position.x, position.y, position.width, position.height), new Vector2(600, 600));
+                        previewPopup.position = new Rect(position.x, position.y, position.width, position.height);
+                        previewPopup.Show();
                     }
                 }
                 else
@@ -402,6 +399,14 @@ namespace AutoAnimaker.Editor
             else
             {
                 isShowPreview = false;
+            }
+
+            if (previewPopup != null)
+            {
+                Rect rect = new Rect(0, 0, animatorStructs[0].sprite.width, animatorStructs[0].sprite.height);
+                previewPopup.PreviewSprite = Sprite.Create(animatorStructs[0].sprite, rect, new Vector2(0.5f, 0.5f));
+                previewPopup.RowCount = rowCount;
+                previewPopup.ColumnCount = columnCount;
             }
         }
         private void DrawFooter()
@@ -541,6 +546,10 @@ namespace AutoAnimaker.Editor
             {
                 optionSO.animatorStructs[i] = animatorStructs[i].GetDeepCopy();
             }
+
+            optionSO.storePath = new String(storePath);
+
+            EditorUtility.SetDirty(optionSO);
         }
 
         public void LoadPreset()
@@ -566,6 +575,8 @@ namespace AutoAnimaker.Editor
             {
                 animatorStructs[i] = selectedObject.animatorStructs[i].GetDeepCopy();
             }
+
+            storePath = new String(selectedObject.storePath);
         }
 
 

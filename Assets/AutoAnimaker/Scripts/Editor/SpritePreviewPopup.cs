@@ -21,6 +21,12 @@ namespace AutoAnimaker.Editor
         public int RowCount { get => rowCount; set => rowCount = value; }
         public int ColumnCount { get => columnCount; set => columnCount = value; }
 
+        // Repaint in BG
+        private void Update()
+        {
+            Repaint();
+        }
+
         void OnGUI()
         {
             if (sprite != null)
@@ -50,9 +56,5 @@ namespace AutoAnimaker.Editor
             }
         }
 
-        private void OnLostFocus()
-        {
-            Close();
-        }
     }
 }
