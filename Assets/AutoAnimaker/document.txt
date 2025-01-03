@@ -1,0 +1,57 @@
+	Documentation.
+
+	qweasfjbv.
+
+	Thank you for purchasing our product.
+	We hope our tools make your development process more convenient.
+
+	If you have a better idea/optimization method or find any bugs, please contact me via Email.
+	My Email address is : yeoinho75@gmail.com
+
+	This asset includes:
+		
+		- Editor scripts for better UX.
+		- Core scripts to perform functions.
+		- Demo Scene to test editor funcs.
+
+	What is this tool for :
+
+		- Unity 2D tool for cutting sprites and easily creating animator override controllers. 
+		- You can automatically create animation clips with just one button!
+
+	How To Use:
+		
+		- Open Editor (Window -> Auto Animaker -> Helper Window)
+		- Set parameters ( or load preset )
+		- Set store path, click create button
+		- Youtube link is here : (https://www.youtube.com/watch?v=WDgmaFSRpbw)
+
+	How To Modify:
+
+		- If you want to modify the editor layout then:
+			- Find Automaker/Scripts/Editor/SpriteAnimatorEditor.cs
+			- Find `OnGUI()` function
+			- All the code for drawing the editor is there.
+
+		- If you want to modify/optimize making progress then:
+			- Find Automaker/Scripts/Core/
+				- SpriteEditFuncs.cs 	: script to slice sprites, make clips and create controller.
+				- PresetLoader.cs 		: script to create/load/erase presets.
+
+		- If `preset` doesn't work then:
+			- Manually erasing/creating presets might cause errors.
+			- Find Automaker/Scripts/Util/Constants.cs
+				- Check `PATH_PRESET` and your project folder hierarchy.
+
+		- For any other issues:
+			- You can leave a comment with any areas that need improvement or features you would like to see.
+			- You can email me directly at: ( yeoinho75@gmail.com )
+
+
+	External Asset Used
+		- All of Demo sprites	:	[Brackeys' Platforemr Bundle] from itch.io
+		- [https://brackeysgames.itch.io/brackeys-platformer-bundle]
+		- Some of them are modified.
+		- LICENSE : Create Commoms Zero (CC0)
+
+	
