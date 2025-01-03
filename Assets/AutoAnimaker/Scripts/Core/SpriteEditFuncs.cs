@@ -134,7 +134,7 @@ namespace AutoAnimaker.Core
             }
             keyFrames[keyFrames.Length - 1] = new ObjectReferenceKeyframe();
             keyFrames[keyFrames.Length - 1].time = clipOpt.frameTime * sprites.Count/1000;
-            keyFrames[keyFrames.Length - 1].value = sprites[0];
+            keyFrames[keyFrames.Length - 1].value = sprites[sprites.Count-1];
 
             AnimationUtility.SetObjectReferenceCurve(clip, curveBinding, keyFrames);
 
